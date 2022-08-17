@@ -1,0 +1,24 @@
+##
+##  Untitled Pong Game
+##  August 2022
+##  Alex Starosta
+##
+
+# COLORS
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+LIGHTGREY = (110, 110, 110)
+DARKGREY = (45, 45, 45)
+BLUE = (51, 102, 255)
+RED = (255, 61, 61)
+
+# GAME SETTINGS
+WIDTH = 1024
+HEIGHT = 768 
+FPS = 60
+TITLE = "Unitiled Pong Game"
+
+# ELEMENTS SETTINGS
+
+PADDLE_SPEED = 7
+BALL_SPEED = 7
