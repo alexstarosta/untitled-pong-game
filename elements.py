@@ -11,7 +11,6 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, game, x, y, pwidth, pheight, player):
         self.groups = game.elements
         pygame.sprite.Sprite.__init__(self, self.groups)
-        self.game = game
         self.image = pygame.Surface([pwidth, pheight])
         if player == 1:
             self.image.fill(BLUE)
@@ -65,4 +64,35 @@ class Player(pygame.sprite.Sprite):
         self.checkPlacement(self.direction)
         self.y += self.velocity
         self.rect.y = self.y
+
+class Ball(pygame.sprite.Sprite):
+    def __init__(self, game, x, y, xVel, yVel, bwidth, bheight):
+        self.groups = game.elements
+        pygame.sprite.Sprite.__init__(self, self.groups)
+        self.image = pygame.Surface([bwidth, bheight])
+        self.image.fill(LIGHTGREY)
+        self.rect = self.image.get_rect()
+        self.width = bwidth
+        self.height = bheight
+        self.xVel = xVel
+        self.yVel = yVel
+        self.rect.x = x
+        self.rect.y = y
+        self.y = y
+        self.x = x
+
+    def checkWalls(self):
+        if self.y < 0 or self.y > HEIGHT - self.height:
+            print("height")
+            self.yVel *= -1
+        if self.x < 0 or self.x > WIDTH - self.width:
+            print("width")
+            self.xVel *= -1
+
+    def update(self):
+        self.checkWalls()
+        self.y += self.yVel
+        self.rect.y = self.y
+        self.x += self.xVel
+        self.rect.x = self.x
         
