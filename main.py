@@ -4,7 +4,7 @@
 ##  Alex Starosta
 ##
 
-from random import randint
+import random
 import pygame
 import sys
 from settings import *
@@ -19,14 +19,16 @@ class Game:
 
     def setup(self):
         self.elements = pygame.sprite.Group()
+        self.ballElements = pygame.sprite.Group()
         self.player1 = Player(self, WIDTH/50, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 1)
         self.player2 = Player(self, WIDTH - 2*WIDTH/50, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 2)
-        self.ball = Ball(self, WIDTH/2, HEIGHT/2, 1*BALL_SPEED, -0.5*BALL_SPEED, WIDTH/50, WIDTH/50)
+        self.ball = Ball(self, WIDTH/2, HEIGHT/2, random.uniform(-1, 1)*BALL_SPEED, random.uniform(-1, 1)*BALL_SPEED, WIDTH/50, WIDTH/50)
         self.draw()
 
     def draw(self):
         self.screen.fill(DARKGREY)
         self.elements.draw(self.screen)
+        self.ballElements.draw(self.screen)
         pygame.display.flip()
 
     def run(self):
@@ -34,6 +36,7 @@ class Game:
         while self.playing:
             self.tickspeed = self.clock.tick(FPS) / 1000.0
             self.elements.update()
+            self.ballElements.update()
             self.draw()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
