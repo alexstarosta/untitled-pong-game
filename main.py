@@ -22,7 +22,7 @@ class Game:
         self.ballElements = pygame.sprite.Group()
         self.player1 = Player(self, WIDTH/50, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 1)
         self.player2 = Player(self, WIDTH - 2*WIDTH/50, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 2)
-        self.ball = Ball(self, WIDTH/2, HEIGHT/2, random.uniform(-1, 1)*BALL_SPEED, random.uniform(-1, 1)*BALL_SPEED, WIDTH/50, WIDTH/50)
+        self.ball = Ball(self, WIDTH/2, HEIGHT/2, 1*BALL_SPEED, -0.75*BALL_SPEED, WIDTH/50, WIDTH/50)
         self.draw()
 
     def draw(self):

@@ -84,15 +84,19 @@ class Ball(pygame.sprite.Sprite):
         self.bounceCount = 0
         self.side = "unknown"
 
-    def increaseSpeed(self, amount):
+    def increaseSpeed(self, xPercent, yPercent, total):
         if self.xVel > 0:
-            self.xVel += amount
+            self.xVel += xPercent*total
         else:
-            self.xVel -= amount
-        if self.yVel > 0:
-            self.yVel += amount
+            self.xVel -= xPercent*total
+
+        if yPercent == 0.5:
+            if self.yVel > 0:
+                self.yVel += yPercent*total
+            else:
+                self.yVel -= yPercent*total
         else:
-            self.yVel -= amount
+            self.yVel += yPercent*total
 
     def checkWalls(self):
         if self.y < 0 or self.y > HEIGHT - self.height:
@@ -104,17 +108,14 @@ class Ball(pygame.sprite.Sprite):
             if self.side == "unknown" or self.side == "left":
                 self.side = "right"
                 self.bounceCount += 1
-                self.increaseSpeed(1)
         if self.x > WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = -abs(self.xVel)
             if self.side == "unknown" or self.side == "right":
                 self.side = "left"
                 self.bounceCount += 1
-                self.increaseSpeed(1)
 
     def update(self):
         self.checkWalls()
-        print(self.yVel)
         self.y += self.yVel
         self.rect.y = self.y
         self.x += self.xVel
