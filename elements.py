@@ -5,6 +5,7 @@
 ##
 
 import pygame
+import time
 from settings import *
 
 class Player(pygame.sprite.Sprite):
@@ -75,28 +76,34 @@ class Ball(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.width = bwidth
         self.height = bheight
-        self.xVel = xVel
-        self.yVel = yVel
+        self.prexVel = xVel
+        self.preyVel = yVel
+        self.xVel = 0
+        self.yVel = 0
         self.rect.x = x
         self.rect.y = y
+        self.originy = y
+        self.originx = x
         self.y = y
         self.x = x
         self.bounceCount = 0
         self.side = "unknown"
 
-    def increaseSpeed(self, xPercent, yPercent, total):
-        if self.xVel > 0:
-            self.xVel += xPercent*total
-        else:
-            self.xVel -= xPercent*total
+    def startGame(self):
+        self.bounceCount = 0
+        self.y = self.originy
+        self.x = self.originx
+        self.startBall(self.prexVel,self.preyVel)
 
-        if yPercent == 0.5:
-            if self.yVel > 0:
-                self.yVel += yPercent*total
-            else:
-                self.yVel -= yPercent*total
+    def startBall(self, xVel, yVel):
+        self.xVel = xVel
+        self.yVel = yVel
+
+    def increaseSpeed(self, amount):
+        if self.xVel > 0.01:
+            self.xVel += amount
         else:
-            self.yVel += yPercent*total
+            self.xVel -= amount
 
     def checkWalls(self):
         if self.y < 0 or self.y > HEIGHT - self.height:
@@ -106,13 +113,29 @@ class Ball(pygame.sprite.Sprite):
         if self.x < WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = abs(self.xVel)
             if self.side == "unknown" or self.side == "left":
+                self.calcYVel(self.game.elements.sprites()[0].velocity, self.game.elements.sprites()[1].velocity, "left")
                 self.side = "right"
+                self.increaseSpeed(0.2)
                 self.bounceCount += 1
         if self.x > WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = -abs(self.xVel)
             if self.side == "unknown" or self.side == "right":
+                self.calcYVel(self.game.elements.sprites()[0].velocity, self.game.elements.sprites()[1].velocity, "right")
                 self.side = "left"
+                self.increaseSpeed(0.2)
                 self.bounceCount += 1
+
+    def calcYVel(self, player1v, player2v, side):
+        if side == "left":
+            if player1v > 0.1:
+                self.yVel += 1
+            elif player1v < -0.1:
+                self.yVel -= 1
+        if side == "right":
+            if player2v > 0.1:
+                self.yVel += 1
+            elif player2v < -0.1:
+                self.yVel -= 1
 
     def update(self):
         self.checkWalls()
