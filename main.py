@@ -21,6 +21,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.gamestate = gamestate
         self.gameCountdown = 3
+        self.score = [0,0]
 
     def setup(self):
         self.elements = pygame.sprite.Group()
@@ -29,9 +30,22 @@ class Game:
         self.player2 = Player(self, WIDTH - 2*WIDTH/50, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 2)
         self.ball = Ball(self, WIDTH/2, HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50)
 
-        gameFont = pygame.font.Font("bit5x5.ttf", 172)
-        self.startingText = gameFont.render(f"{self.gameCountdown}", False, LIGHTGREY)
+        gameFont5x5 = pygame.font.Font("bit5x5.ttf", 172)
+        self.startingText = gameFont5x5.render(f"{self.gameCountdown}", False, LIGHTGREY)
         self.startingTextRect = self.startingText.get_rect(center = (WIDTH/1.92, HEIGHT/4))
+
+        gameFont5x3 = pygame.font.Font("bit5x3.ttf", 112)
+        if self.score[0] < 10:
+            self.score1 = gameFont5x3.render("0" + f"{self.score[0]}", False, LIGHTGREY)
+        else:
+            self.score1 = gameFont5x3.render(f"{self.score[0]}", False, LIGHTGREY)
+        self.score1Rect = self.score1.get_rect(center = (77.5, 65))
+
+        if self.score[1] < 10:
+            self.score2 = gameFont5x3.render("0" + f"{self.score[1]}", False, LIGHTGREY)
+        else:
+            self.score2 = gameFont5x3.render(f"{self.score[1]}", False, LIGHTGREY)
+        self.score2Rect = self.score2.get_rect(center = (WIDTH-62.5, 65))
 
         self.draw()
 
@@ -40,13 +54,34 @@ class Game:
         self.elements.draw(self.screen)
         self.ballElements.draw(self.screen)
         self.screen.blit(self.startingText, self.startingTextRect)
-        pygame.display.flip() 
+        self.screen.blit(self.score1, self.score1Rect)
+        self.screen.blit(self.score2, self.score2Rect)
+        pygame.display.flip()
 
     def drawCountdown(self, text):
         gameFont = pygame.font.Font("bit5x5.ttf", 172)
         self.startingText = gameFont.render(f"{text}", False, LIGHTGREY)
         self.startingTextRect = self.startingText.get_rect(center = (WIDTH/1.92, HEIGHT/4))
+
         self.screen.blit(self.startingText, self.startingTextRect)
+        pygame.display.flip() 
+
+    def drawScores(self):
+        gameFont5x3 = pygame.font.Font("bit5x3.ttf", 112)
+        if self.score[0] < 10:
+            self.score1 = gameFont5x3.render("0" + f"{self.score[0]}", False, LIGHTGREY)
+        else:
+            self.score1 = gameFont5x3.render(f"{self.score[0]}", False, LIGHTGREY)
+        self.score1Rect = self.score1.get_rect(center = (77.5, 65))
+
+        if self.score[1] < 10:
+            self.score2 = gameFont5x3.render("0" + f"{self.score[1]}", False, LIGHTGREY)
+        else:
+            self.score2 = gameFont5x3.render(f"{self.score[1]}", False, LIGHTGREY)
+        self.score2Rect = self.score2.get_rect(center = (WIDTH-62.5, 65))
+
+        self.screen.blit(self.score1, self.score1Rect)
+        self.screen.blit(self.score2, self.score2Rect)
         pygame.display.flip() 
 
     def run(self):
