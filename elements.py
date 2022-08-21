@@ -5,7 +5,7 @@
 ##
 
 import pygame
-import time
+import math
 from settings import *
 
 class Player(pygame.sprite.Sprite):
@@ -74,6 +74,7 @@ class Ball(pygame.sprite.Sprite):
         self.image = pygame.Surface([bwidth, bheight])
         self.image.fill(LIGHTGREY)
         self.rect = self.image.get_rect()
+        self.rect.center = (x,y)
         self.width = bwidth
         self.height = bheight
         self.prexVel = xVel
@@ -82,9 +83,9 @@ class Ball(pygame.sprite.Sprite):
         self.yVel = 0
         self.rect.x = x
         self.rect.y = y
-        self.originy = y
+        self.originy = y - self.height/2
         self.originx = x
-        self.y = y
+        self.y = y - self.height/2
         self.x = x
         self.bounceCount = 0
         self.side = "unknown"
@@ -113,29 +114,46 @@ class Ball(pygame.sprite.Sprite):
         if self.x < WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = abs(self.xVel)
             if self.side == "unknown" or self.side == "left":
-                self.calcYVel(self.game.elements.sprites()[0].velocity, self.game.elements.sprites()[1].velocity, "left")
+                self.calcYVel(self.game.elements.sprites()[0], self.game.elements.sprites()[1], self.y, self.x, "left")
                 self.side = "right"
-                self.increaseSpeed(0.2)
+                #self.increaseSpeed(0.2)
                 self.bounceCount += 1
         if self.x > WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = -abs(self.xVel)
             if self.side == "unknown" or self.side == "right":
-                self.calcYVel(self.game.elements.sprites()[0].velocity, self.game.elements.sprites()[1].velocity, "right")
+                self.calcYVel(self.game.elements.sprites()[0], self.game.elements.sprites()[1], self.y, self.x, "right")
                 self.side = "left"
-                self.increaseSpeed(0.2)
+                #self.increaseSpeed(0.2)
                 self.bounceCount += 1
 
-    def calcYVel(self, player1v, player2v, side):
+    def calcYVel(self, player1, player2, bally, ballx, side):
         if side == "left":
-            if player1v > 0.1:
-                self.yVel += 1
-            elif player1v < -0.1:
-                self.yVel -= 1
+            refPoint = player1.rect.center
+            refPointx = refPoint[0] - player1.rect.height/2
+            refPointy = refPoint[1]
+
+            angle = ((bally + self.height/2) - refPointy) / (ballx - refPointx) * 45
+            self.xVel += 0.2
+
+            if angle < 0:
+                angle = abs(angle)
+                self.yVel = (math.tan(angle * (math.pi/180)) * abs(self.xVel)) * -1.2
+            else:
+                self.yVel = (math.tan(angle * (math.pi/180)) * abs(self.xVel)) * 1.2    
+
         if side == "right":
-            if player2v > 0.1:
-                self.yVel += 1
-            elif player2v < -0.1:
-                self.yVel -= 1
+            refPoint = player2.rect.center
+            refPointx = refPoint[0] + player2.rect.height/2
+            refPointy = refPoint[1]
+
+            angle = ((bally + self.height/2) - refPointy) / (ballx - refPointx) * 45
+            self.xVel -= 0.2
+
+            if angle < 0:
+                angle = abs(angle)
+                self.yVel = (math.tan(angle * (math.pi/180)) * abs(self.xVel)) * 1.2
+            else:
+                self.yVel = (math.tan(angle * (math.pi/180)) * abs(self.xVel)) * -1.2          
 
     def update(self):
         self.checkWalls()
