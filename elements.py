@@ -91,14 +91,20 @@ class Ball(pygame.sprite.Sprite):
         self.side = "unknown"
 
     def startGame(self):
-        self.bounceCount = 0
-        self.y = self.originy
-        self.x = self.originx
         self.startBall(self.prexVel,self.preyVel)
 
     def startBall(self, xVel, yVel):
         self.xVel = xVel
         self.yVel = yVel
+
+    def resetBall(self):
+        self.bounceCount = 0
+        self.y = self.originy
+        self.x = self.originx
+        self.rect.x = self.originx
+        self.rect.y = self.originy
+        self.yVel = 0
+        self.xVel = 0
 
     def increaseSpeed(self, amount):
         if self.xVel > 0.01:
@@ -109,8 +115,18 @@ class Ball(pygame.sprite.Sprite):
     def checkWalls(self):
         if self.y < 0 or self.y > HEIGHT - self.height:
             self.yVel *= -1
-        if self.x < 0 or self.x > WIDTH - self.width:
-            self.xVel *= -1
+        if self.x < 0:
+            self.resetBall()
+            self.game.gameState = "playing"
+            self.game.gameCountdown = 5
+            self.game.score[1] += 1
+            self.game.drawScores()
+        elif self.x > WIDTH - self.width:
+            self.resetBall()
+            self.game.gameState = "playing"
+            self.game.gameCountdown = 5
+            self.game.score[0] += 1
+            self.game.drawScores()
         if self.x < WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = abs(self.xVel)
             if self.side == "unknown" or self.side == "left":
