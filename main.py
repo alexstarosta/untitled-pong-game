@@ -30,6 +30,8 @@ class Game:
         self.player2 = Player(self, WIDTH - 2*WIDTH/50, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 2)
         self.ball = Ball(self, WIDTH/2, HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50)
 
+        self.particleSpawner = ParticleSpawner()
+
         gameFont5x5 = pygame.font.Font("bit5x5.ttf", 172)
         self.startingText = gameFont5x5.render(f"{self.gameCountdown}", False, LIGHTGREY)
         self.startingTextRect = self.startingText.get_rect(center = (WIDTH/1.92, HEIGHT/4))
@@ -56,6 +58,7 @@ class Game:
         self.screen.blit(self.startingText, self.startingTextRect)
         self.screen.blit(self.score1, self.score1Rect)
         self.screen.blit(self.score2, self.score2Rect)
+        self.particleSpawner.particleGroup.draw(self.screen)
         pygame.display.flip()
 
     def drawCountdown(self, text):
@@ -92,6 +95,9 @@ class Game:
             self.elements.update()
             self.ballElements.update()
             self.draw()
+
+            self.particleSpawner.update()
+
             self.gameCountdown -= self.tickspeed
             
             if self.gameCountdown >= -3:

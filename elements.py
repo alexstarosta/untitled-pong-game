@@ -4,8 +4,10 @@
 ##  Alex Starosta
 ##
 
+from os import kill
 import pygame
 import math
+import random
 from settings import *
 
 class Player(pygame.sprite.Sprite):
@@ -131,15 +133,17 @@ class Ball(pygame.sprite.Sprite):
             self.xVel = abs(self.xVel)
             if self.side == "unknown" or self.side == "left":
                 self.calcYVel(self.game.elements.sprites()[0], self.game.elements.sprites()[1], self.y, self.x, "left")
+                self.game.particleSpawner.spawnParticles(BLUE, self.x, self.y, "left")
                 self.side = "right"
-                #self.increaseSpeed(0.2)
+                self.increaseSpeed(0.2)
                 self.bounceCount += 1
         if self.x > WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = -abs(self.xVel)
             if self.side == "unknown" or self.side == "right":
                 self.calcYVel(self.game.elements.sprites()[0], self.game.elements.sprites()[1], self.y, self.x, "right")
+                self.game.particleSpawner.spawnParticles(RED, self.x, self.y, "right")
                 self.side = "left"
-                #self.increaseSpeed(0.2)
+                self.increaseSpeed(0.2)
                 self.bounceCount += 1
 
     def calcYVel(self, player1, player2, bally, ballx, side):
@@ -149,7 +153,6 @@ class Ball(pygame.sprite.Sprite):
             refPointy = refPoint[1]
 
             angle = ((bally + self.height/2) - refPointy) / (ballx - refPointx) * 45
-            self.xVel += 0.2
 
             if angle < 0:
                 angle = abs(angle)
@@ -177,4 +180,55 @@ class Ball(pygame.sprite.Sprite):
         self.rect.y = self.y
         self.x += self.xVel
         self.rect.x = self.x
+
+class Particle(pygame.sprite.Sprite):
+    def __init__(self, color, position):
+        super(Particle, self).__init__()
+        self.width = random.randrange(15,19)
+        self.originWidth = self.width
+        self.height = self.width
+        self.size = (self.width, self.height)
+        self.image = pygame.Surface(self.size)
+        self.color = color
+        self.image.fill(self.color)
+        self.rect = self.image.get_rect()
+        if position == "right":
+            self.xVel = random.uniform(-8, 0)
+        if position == "left":
+            self.xVel = random.uniform(0, 8)
+        self.yVel = random.uniform(-8, 8)
+        self.killTimer = random.randint(5,15)
+        self.startTimer = self.killTimer
+        self.updateCount = 0
         
+    def update(self):
+        if self.updateCount % 3 != 0:
+            self.rect.x += self.xVel
+            self.rect.y += self.yVel
+            if self.killTimer == 0:
+                self.kill()
+            else:
+                self.killTimer -= 1
+            self.width = math.ceil((self.killTimer/self.startTimer) * self.originWidth)
+            self.height = self.width
+            self.size = (self.width, self.height)
+            self.image = pygame.Surface(self.size)
+            self.image.fill(self.color)
+            self.updateCount += 1
+        else:
+            self.updateCount += 1
+
+class ParticleSpawner:
+    def __init__(self):
+        self.particleGroup = pygame.sprite.Group()
+
+    def update(self):
+        self.particleGroup.update()
+
+    def spawnParticles(self, color, x, y, position):
+        particleAmount = random.randrange(5,9)
+        for i in range(particleAmount):
+            particle = Particle(color, position)
+            particle.rect.x = x
+            particle.rect.y = y
+            self.particleGroup.add(particle)
