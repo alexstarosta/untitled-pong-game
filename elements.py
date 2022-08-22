@@ -91,6 +91,7 @@ class Ball(pygame.sprite.Sprite):
         self.x = x
         self.bounceCount = 0
         self.side = "unknown"
+        self.angle = 0
 
     def startGame(self):
         self.startBall(self.prexVel,self.preyVel)
@@ -107,6 +108,7 @@ class Ball(pygame.sprite.Sprite):
         self.rect.y = self.originy
         self.yVel = 0
         self.xVel = 0
+        self.side = "unknown"
 
     def increaseSpeed(self, amount):
         if self.xVel > 0.01:
@@ -133,7 +135,10 @@ class Ball(pygame.sprite.Sprite):
             self.xVel = abs(self.xVel)
             if self.side == "unknown" or self.side == "left":
                 self.calcYVel(self.game.elements.sprites()[0], self.game.elements.sprites()[1], self.y, self.x, "left")
-                self.game.particleSpawner.spawnParticles(BLUE, self.x, self.y, "left")
+                if self.angle > 41 or self.angle < -41:
+                    self.game.particleSpawner.spawnParticles(BLUE, self.rect.x, self.y, "corner")
+                else:
+                    self.game.particleSpawner.spawnParticles(BLUE, self.game.elements.sprites()[0].rect.right, self.y, "left")
                 self.side = "right"
                 self.increaseSpeed(0.2)
                 self.bounceCount += 1
@@ -141,7 +146,10 @@ class Ball(pygame.sprite.Sprite):
             self.xVel = -abs(self.xVel)
             if self.side == "unknown" or self.side == "right":
                 self.calcYVel(self.game.elements.sprites()[0], self.game.elements.sprites()[1], self.y, self.x, "right")
-                self.game.particleSpawner.spawnParticles(RED, self.x, self.y, "right")
+                if self.angle > 41 or self.angle < -41:
+                    self.game.particleSpawner.spawnParticles(RED, self.rect.x, self.y, "corner")
+                else:
+                    self.game.particleSpawner.spawnParticles(RED, self.game.elements.sprites()[1].rect.left, self.y, "right")
                 self.side = "left"
                 self.increaseSpeed(0.2)
                 self.bounceCount += 1
@@ -152,27 +160,40 @@ class Ball(pygame.sprite.Sprite):
             refPointx = refPoint[0] - player1.rect.height/2
             refPointy = refPoint[1]
 
-            angle = ((bally + self.height/2) - refPointy) / (ballx - refPointx) * 45
+            self.angle = ((bally + self.height/2) - refPointy) / (ballx - refPointx) * 45
 
-            if angle < 0:
-                angle = abs(angle)
-                self.yVel = (math.tan(angle * (math.pi/180)) * abs(self.xVel)) * -1.2
+            if self.angle > 65:
+                self.angle = 65
+            elif self.angle < -65:
+                self.angle = -65
+
+            self.xVel -= 0.2
+
+            if self.angle < 0:
+                self.angle = abs(self.angle)
+                self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * -1.2
             else:
-                self.yVel = (math.tan(angle * (math.pi/180)) * abs(self.xVel)) * 1.2    
+                self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * 1.2    
 
         if side == "right":
             refPoint = player2.rect.center
             refPointx = refPoint[0] + player2.rect.height/2
             refPointy = refPoint[1]
 
-            angle = ((bally + self.height/2) - refPointy) / (ballx - refPointx) * 45
+            self.angle = ((bally + self.height/2) - refPointy) / (ballx - refPointx) * 45
+            print(self.angle)
+            if self.angle > 65:
+                self.angle = 65
+            elif self.angle < -65:
+                self.angle = -65
+
             self.xVel -= 0.2
 
-            if angle < 0:
-                angle = abs(angle)
-                self.yVel = (math.tan(angle * (math.pi/180)) * abs(self.xVel)) * 1.2
+            if self.angle < 0:
+                self.angle = abs(self.angle)
+                self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * 1.2
             else:
-                self.yVel = (math.tan(angle * (math.pi/180)) * abs(self.xVel)) * -1.2          
+                self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * -1.2          
 
     def update(self):
         self.checkWalls()
@@ -196,8 +217,10 @@ class Particle(pygame.sprite.Sprite):
             self.xVel = random.uniform(-8, 0)
         if position == "left":
             self.xVel = random.uniform(0, 8)
+        if position == "corner":
+            self.xVel = random.uniform(-8, 8)
         self.yVel = random.uniform(-8, 8)
-        self.killTimer = random.randint(5,15)
+        self.killTimer = random.randint(5,10)
         self.startTimer = self.killTimer
         self.updateCount = 0
         
