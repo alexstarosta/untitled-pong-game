@@ -92,12 +92,16 @@ class Ball(pygame.sprite.Sprite):
         self.bounceCount = 0
         self.side = "unknown"
         self.angle = 0
+        self.lastWinner = "unknown"
 
     def startGame(self):
         self.startBall(self.prexVel,self.preyVel)
 
     def startBall(self, xVel, yVel):
-        self.xVel = xVel
+        if self.lastWinner == "right":
+            self.xVel = -abs(xVel)
+        else:
+            self.xVel = abs(xVel)
         self.yVel = yVel
 
     def resetBall(self):
@@ -124,12 +128,14 @@ class Ball(pygame.sprite.Sprite):
             self.game.gameState = "playing"
             self.game.gameCountdown = 5
             self.game.score[1] += 1
+            self.lastWinner = "right"
             self.game.drawScores()
         elif self.x > WIDTH - self.width:
             self.resetBall()
             self.game.gameState = "playing"
             self.game.gameCountdown = 5
             self.game.score[0] += 1
+            self.lastWinner = "left"
             self.game.drawScores()
         if self.x < WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = abs(self.xVel)
@@ -180,8 +186,8 @@ class Ball(pygame.sprite.Sprite):
             refPointx = refPoint[0] + player2.rect.height/2
             refPointy = refPoint[1]
 
-            self.angle = ((bally + self.height/2) - refPointy) / (ballx - refPointx) * 45
-            print(self.angle)
+            self.angle = ((bally + self.height/2) - refPointy) / ((ballx + self.width) - refPointx) * 45
+
             if self.angle > 65:
                 self.angle = 65
             elif self.angle < -65:
@@ -194,6 +200,9 @@ class Ball(pygame.sprite.Sprite):
                 self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * 1.2
             else:
                 self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * -1.2          
+        print(refPointx)
+        print(refPointy)
+        print(self.angle)
 
     def update(self):
         self.checkWalls()
