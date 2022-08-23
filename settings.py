@@ -16,7 +16,7 @@ RED = (255, 61, 61)
 WIDTH = 1024
 HEIGHT = 768 
 FPS = 60
-TITLE = "Unitiled Pong Game"
+TITLE = "Untitled Pong Game"
 
 # ELEMENTS SETTINGS
 
