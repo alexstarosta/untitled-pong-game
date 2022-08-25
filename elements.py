@@ -15,9 +15,9 @@ class Player(pygame.sprite.Sprite):
         self.groups = game.elements
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.image = pygame.Surface([pwidth, pheight])
-        if player == 1:
+        if player == 1 or player == "menu1":
             self.image.fill(BLUE)
-        elif player == 2:
+        elif player == 2 or player == "menu2":
             self.image.fill(RED)
         self.rect = self.image.get_rect()
         self.velocity = 0
@@ -200,9 +200,6 @@ class Ball(pygame.sprite.Sprite):
                 self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * 1.2
             else:
                 self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * -1.2          
-        print(refPointx)
-        print(refPointy)
-        print(self.angle)
 
     def update(self):
         self.checkWalls()
@@ -214,7 +211,10 @@ class Ball(pygame.sprite.Sprite):
 class Particle(pygame.sprite.Sprite):
     def __init__(self, color, position):
         super(Particle, self).__init__()
-        self.width = random.randrange(15,19)
+        if position == "title":
+            self.width = random.randrange(15,19)*1.5
+        else:
+            self.width = random.randrange(15,19)
         self.originWidth = self.width
         self.height = self.width
         self.size = (self.width, self.height)
@@ -226,10 +226,16 @@ class Particle(pygame.sprite.Sprite):
             self.xVel = random.uniform(-8, 0)
         if position == "left":
             self.xVel = random.uniform(0, 8)
-        if position == "corner":
+        if position == "corner" or position == "title":
             self.xVel = random.uniform(-8, 8)
-        self.yVel = random.uniform(-8, 8)
-        self.killTimer = random.randint(5,10)
+        if position == "title":
+            self.yVel = random.uniform(0, 8)
+        else:
+            self.yVel = random.uniform(-8, 8)
+        if position == "title":
+            self.killTimer = random.randint(5,10)*3
+        else:
+            self.killTimer = random.randint(5,10)
         self.startTimer = self.killTimer
         self.updateCount = 0
         

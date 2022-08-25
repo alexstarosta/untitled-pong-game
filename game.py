@@ -12,7 +12,6 @@ from elements import *
 
 class Game:
     def __init__(self, gamestate):
-        pygame.init()
         pygame.font.init()
         self.screen = pygame.display.set_mode((WIDTH,HEIGHT))
         pygame.display.set_caption(TITLE)

@@ -7,8 +7,14 @@
 from settings import *
 from elements import *
 from game import *
+from menu import *
 
-gamestate = "inactive"
-game = Game(gamestate)
-game.setup()
-game.run()
+def startGame():
+    gamestate = "inactive"
+    game = Game(gamestate)
+    game.setup()
+    game.run()
+
+menu = Menu()
+menu.setup()
+menu.run()
