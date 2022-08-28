@@ -99,30 +99,35 @@ class Menu:
 
 
     def setupOptions(self, state):
-        gameFont5x5small = pygame.font.Font("bit5x5.ttf", 32)
+        if state == "open":
+            gameFont5x5small = pygame.font.Font("bit5x5.ttf", 32)
 
-        self.modeButton = gameFont5x5small.render("Mode:", False, LIGHTGREY)
-        self.modeButtonRect = self.modeButton.get_rect(midright = (WIDTH/2 + 175, HEIGHT/2 + 100))
+            self.modeButton = gameFont5x5small.render("Mode:", False, LIGHTGREY)
+            self.modeButtonRect = self.modeButton.get_rect(midright = (WIDTH/2 + 175, HEIGHT/2 + 100))
 
-        self.modeButtonAction = gameFont5x5small.render(self.gamemode, False, LIGHTGREY)
-        self.modeButtonActionRect = self.modeButtonAction.get_rect(midleft = (WIDTH/2 + 200, HEIGHT/2 + 100))
+            self.modeButtonAction = gameFont5x5small.render(self.gamemode, False, LIGHTGREY)
+            self.modeButtonActionRect = self.modeButtonAction.get_rect(midleft = (WIDTH/2 + 200, HEIGHT/2 + 100))
 
-        self.sfxButton = gameFont5x5small.render("sfx:", False, LIGHTGREY)
-        self.sfxButtonRect = self.sfxButton.get_rect(midright = (WIDTH/2 + 175, HEIGHT/2 + 175))
+            self.sfxButton = gameFont5x5small.render("sfx:", False, LIGHTGREY)
+            self.sfxButtonRect = self.sfxButton.get_rect(midright = (WIDTH/2 + 175, HEIGHT/2 + 175))
 
-        self.sfxButtonAction = gameFont5x5small.render(self.sfxSetting, False, RED)
-        self.sfxButtonActionRect = self.sfxButtonAction.get_rect(midleft = (WIDTH/2 + 200, HEIGHT/2 + 175))
+            self.sfxButtonAction = gameFont5x5small.render(self.sfxSetting, False, RED)
+            self.sfxButtonActionRect = self.sfxButtonAction.get_rect(midleft = (WIDTH/2 + 200, HEIGHT/2 + 175))
 
-        self.partiButton = gameFont5x5small.render("Particles:", False, LIGHTGREY)
-        self.partiButtonRect = self.partiButton.get_rect(midright = (WIDTH/2 + 175, HEIGHT/2 + 250))
+            self.partiButton = gameFont5x5small.render("Particles:", False, LIGHTGREY)
+            self.partiButtonRect = self.partiButton.get_rect(midright = (WIDTH/2 + 175, HEIGHT/2 + 250))
 
-        self.partiButtonAction = gameFont5x5small.render(self.particleSetting, False, RED)
-        self.partiButtonActionRect = self.partiButtonAction.get_rect(midleft = (WIDTH/2 + 200, HEIGHT/2 + 250))
+            self.partiButtonAction = gameFont5x5small.render(self.particleSetting, False, RED)
+            self.partiButtonActionRect = self.partiButtonAction.get_rect(midleft = (WIDTH/2 + 200, HEIGHT/2 + 250))
 
-        self.updateMenuItems(-255)
+            self.updateMenuItems(-255)
 
-        self.optionsOpen = True
-        pygame.display.flip()
+            self.optionsOpen = True
+            pygame.display.flip()
+        elif state == "close":
+            gameFont5x5small = pygame.font.Font("bit5x5.ttf", 32)
+            self.optionsOpen = False
+            self.updateMenuItems(0)
 
     def reRenderSettings(self):
         gameFont5x5small = pygame.font.Font("bit5x5.ttf", 32)
@@ -174,7 +179,7 @@ class Menu:
                     self.textUntitledRect = self.textUntitled.get_rect(center = (WIDTH/2 - 180 + self.widthAdj - self.sideAnimationUntitled, HEIGHT/2 - 100 + self.heightAdj))
             
             if self.counter > 3:
-                if self.optionsOpen == False:
+                if not self.optionsOpen:
                     mousePos = pygame.mouse.get_pos()
                     if self.playButtonRect.collidepoint(mousePos):
                         self.playButton = gameFont5x5small.render("Play", False, LIGHTLIGHTGREY)
@@ -247,41 +252,45 @@ class Menu:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.quit()
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.counter > 3:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if self.playButtonRect.collidepoint(mousePos):
+                            if not self.optionsOpen:
+                                print("play")
+                        elif self.optionsButtonRect.collidepoint(mousePos):
+                            if self.optionsOpen:
+                                self.setupOptions("close")
+                            else:
+                                self.setupOptions("open")
+                        elif self.creditsButtonRect.collidepoint(mousePos):
+                            if not self.optionsOpen:
+                                print("credits")
 
-                    if self.playButtonRect.collidepoint(mousePos):
-                        print("play")
-                    elif self.optionsButtonRect.collidepoint(mousePos):
                         if self.optionsOpen:
-                             self.setupOptions("close")
-                        else:
-                            self.setupOptions("open")
-                    elif self.creditsButtonRect.collidepoint(mousePos):
-                        print("credits")
+                            if self.sfxButtonActionRect.collidepoint(mousePos):
+                                if self.sfxSetting == "on":
+                                    self.sfxSetting = "off"
+                                else:
+                                    self.sfxSetting = "on"
+                            self.reRenderSettings()
+                    
+                            if self.partiButtonActionRect.collidepoint(mousePos):
+                                if self.particleSetting == "on":
+                                    self.particleSetting = "off"
+                                else:
+                                    self.particleSetting = "on"
+                                    self.particleSpawner.spawnParticles(LIGHTRED, mousePos[0], mousePos[1], "corner")
 
-                    if self.optionsOpen:
-                        if self.sfxButtonActionRect.collidepoint(mousePos):
-                            if self.sfxSetting == "on":
-                                self.sfxSetting = "off"
-                            else:
-                                self.sfxSetting = "on"
-                        self.reRenderSettings()
-                
-                        if self.partiButtonActionRect.collidepoint(mousePos):
-                            if self.particleSetting == "on":
-                                self.particleSetting = "off"
-                            else:
-                                self.particleSetting = "on"
-                        self.reRenderSettings()
+                            self.reRenderSettings()
 
-                        if self.modeButtonActionRect.collidepoint(mousePos):
-                            if self.gamemode == "1 player":
-                                self.gamemode = "2 player"
-                            elif self.gamemode == "2 player":
-                                self.gamemode = "bot 1v1"
-                            elif self.gamemode == "bot 1v1":
-                                self.gamemode = "1 player"
-                        self.reRenderSettings()
+                            if self.modeButtonActionRect.collidepoint(mousePos):
+                                if self.gamemode == "1 player":
+                                    self.gamemode = "2 player"
+                                elif self.gamemode == "2 player":
+                                    self.gamemode = "bot 1v1"
+                                elif self.gamemode == "bot 1v1":
+                                    self.gamemode = "1 player"
+                            self.reRenderSettings()
                     
 
     def quit(self):
