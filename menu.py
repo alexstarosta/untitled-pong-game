@@ -21,6 +21,9 @@ class Menu:
         self.sfxSetting = "on"
         self.particleSetting = "on"
         self.gamemode = "1 player"
+        self.oclick = 0
+        self.ofall = False
+        self.ofallspeed = 0
 
     def setup(self):
         self.elements = pygame.sprite.Group()
@@ -39,8 +42,11 @@ class Menu:
         self.textUntitled = gameFont5x5small.render("untitled", False, LIGHTGREY)
         self.textUntitledRect = self.textUntitled.get_rect(center = (WIDTH/2 - 180 + self.widthAdj - self.sideAnimationUntitled, HEIGHT/2 - 100 + self.heightAdj))
 
-        self.textPong = gameFont5x5large.render("pong", False, LIGHTGREY)
+        self.textPong = gameFont5x5large.render("p   ng", False, LIGHTGREY)
         self.textPongRect = self.textPong.get_rect(center = (WIDTH/2 - 90 + self.widthAdj, HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong))
+
+        self.texto = gameFont5x5large.render("o", False, LIGHTGREY)
+        self.textoRect = self.texto.get_rect(center = (WIDTH/2 - 190 + self.widthAdj, HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong))
 
         self.textGame = gameFont5x5large.render("game", False, LIGHTGREY)
         self.textGameRect = self.textGame.get_rect(center = (WIDTH/2 + 2 + self.widthAdj, HEIGHT/2 + 65 + self.heightAdj - self.heightAnimationGame))
@@ -69,6 +75,7 @@ class Menu:
 
         self.screen.blit(self.textUntitled, self.textUntitledRect)
         self.screen.blit(self.textPong, self.textPongRect)
+        self.screen.blit(self.texto, self.textoRect)
         self.screen.blit(self.textGame, self.textGameRect)
 
         self.screen.blit(self.playButton, self.playButtonRect)
@@ -186,28 +193,35 @@ class Menu:
             self.elements.update()
 
             self.counter += self.tickspeed
-            if self.counter > 2.7:
+            if self.counter > 2.5:
                 self.alpha = 255 / (self.counter - 2.5/1)
                 self.cover.set_alpha(self.alpha)
-            elif self.counter > 2.4:
+            elif self.counter > 2.1:
                 if self.heightAnimationGame > 0:
                     self.heightAnimationGame -= 50
                     self.textGameRect = self.textGame.get_rect(center = (WIDTH/2 + 2 + self.widthAdj, HEIGHT/2 + 65 + self.heightAdj - self.heightAnimationGame))
                     if self.heightAnimationGame == 0:
                         for i in range(15):
                             self.particleSpawner.spawnParticles(LIGHTGREY, WIDTH/2 + 2 + self.widthAdj + random.uniform(-150, 150), HEIGHT/2 + 65 + self.heightAdj - self.heightAnimationGame + 30, "title")
-            if self.counter > 2.0:
+            if self.counter > 1.7:
                 if self.heightAnimationPong > 0:
                     self.heightAnimationPong -= 50
                     self.textPongRect = self.textPong.get_rect(center = (WIDTH/2 - 90 + self.widthAdj, HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong))
+                    self.textoRect = self.texto.get_rect(center = (WIDTH/2 - 138 + self.widthAdj, HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong))
                     if self.heightAnimationPong == 0:
                         for i in range(15):
                            self.particleSpawner.spawnParticles(LIGHTGREY, WIDTH/2 - 90 + self.widthAdj + random.uniform(-150, 150), HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong + 20, "title") 
             elif self.counter > 0.6:
                 if self.sideAnimationUntitled > 0:
-                    self.sideAnimationUntitled -= 10
+                    self.sideAnimationUntitled -= 20
                     self.textUntitledRect = self.textUntitled.get_rect(center = (WIDTH/2 - 180 + self.widthAdj - self.sideAnimationUntitled, HEIGHT/2 - 100 + self.heightAdj))
             
+            if self.ofall:
+                self.ofallspeed += 0.5
+                self.textoRect.y += self.ofallspeed
+                if self.textoRect.y > 1000:
+                    self.ofall = False
+
             if self.counter > 3:
                 mousePos = pygame.mouse.get_pos()
                 if self.playButtonRect.collidepoint(mousePos):
@@ -295,6 +309,14 @@ class Menu:
                                 else:
                                     self.setupOptions("close")
                                     self.setupCredits("open")
+
+                        if self.textoRect.collidepoint(mousePos):
+                            self.oclick += 1
+                            self.particleSpawner.spawnParticles(LIGHTGREY, mousePos[0], mousePos[1], "corner")
+                            if self.oclick > 2:
+                                self.ofall = True
+                            else:
+                                self.textoRect.y += 2
 
                         if self.optionsOpen:
                             if self.sfxButtonActionRect.collidepoint(mousePos):
