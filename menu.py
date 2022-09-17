@@ -17,6 +17,7 @@ class Menu:
         pygame.display.set_caption(TITLE)
         self.clock = pygame.time.Clock()
         self.optionsOpen = False
+        self.creditsOpen = False
         self.sfxSetting = "on"
         self.particleSetting = "on"
         self.gamemode = "1 player"
@@ -84,6 +85,12 @@ class Menu:
             self.screen.blit(self.partiButtonAction, self.partiButtonActionRect)
             self.screen.blit(self.modeButtonAction, self.modeButtonActionRect)
 
+        if self.creditsOpen:
+            self.screen.blit(self.credit1, self.credit1Rect)
+            self.screen.blit(self.credit2, self.credit2Rect)
+            self.screen.blit(self.credit11, self.credit11Rect)
+            self.screen.blit(self.credit22, self.credit22Rect)
+
         self.particleSpawner.particleGroup.draw(self.screen)
         pygame.display.flip()
 
@@ -96,7 +103,6 @@ class Menu:
 
         self.player1menu.rect.x = WIDTH/2 + self.playButtonRect.width * 1.5 - 7 + adj
         self.player2menu.rect.x = WIDTH/2 - self.playButtonRect.width * 1.5 - 7 + adj
-
 
     def setupOptions(self, state):
         if state == "open":
@@ -125,8 +131,32 @@ class Menu:
             self.optionsOpen = True
             pygame.display.flip()
         elif state == "close":
-            gameFont5x5small = pygame.font.Font("bit5x5.ttf", 32)
             self.optionsOpen = False
+            self.updateMenuItems(0)
+
+    def setupCredits(self, state):
+        if state == "open":
+            gameFont5x5small = pygame.font.Font("bit5x5.ttf", 32)
+            gameFont5x5smallsmall = pygame.font.Font("bit5x5.ttf", 26)
+
+            self.credit1 = gameFont5x5smallsmall.render("a Game by", False, LIGHTGREY)
+            self.credit1Rect = self.credit1.get_rect(midleft = (WIDTH/2 - 50, HEIGHT/2 + 100))
+
+            self.credit11 = gameFont5x5small.render("Alex Starosta", False, LIGHTGREY)
+            self.credit11Rect = self.credit11.get_rect(midleft = (WIDTH/2 - 50, HEIGHT/2 + 140))
+
+            self.credit2 = gameFont5x5smallsmall.render("Bitfonts by", False, LIGHTGREY)
+            self.credit2Rect = self.credit2.get_rect(midleft = (WIDTH/2 - 50, HEIGHT/2 + 215))
+
+            self.credit22 = gameFont5x5small.render("Matt LaGrandeur", False, LIGHTGREY)
+            self.credit22Rect = self.credit22.get_rect(midleft = (WIDTH/2 - 50, HEIGHT/2 + 255))
+
+            self.updateMenuItems(-255)
+
+            self.creditsOpen = True
+            pygame.display.flip()
+        elif state == "close":
+            self.creditsOpen = False
             self.updateMenuItems(0)
 
     def reRenderSettings(self):
@@ -179,25 +209,24 @@ class Menu:
                     self.textUntitledRect = self.textUntitled.get_rect(center = (WIDTH/2 - 180 + self.widthAdj - self.sideAnimationUntitled, HEIGHT/2 - 100 + self.heightAdj))
             
             if self.counter > 3:
-                if not self.optionsOpen:
-                    mousePos = pygame.mouse.get_pos()
-                    if self.playButtonRect.collidepoint(mousePos):
-                        self.playButton = gameFont5x5small.render("Play", False, LIGHTLIGHTGREY)
-                        self.placement = self.playButtonRect.y - self.playButtonRect.height/2
-                    else:
-                        self.playButton = gameFont5x5small.render("Play", False, LIGHTGREY)
+                mousePos = pygame.mouse.get_pos()
+                if self.playButtonRect.collidepoint(mousePos):
+                    self.playButton = gameFont5x5small.render("Play", False, LIGHTLIGHTGREY)
+                    self.placement = self.playButtonRect.y - self.playButtonRect.height/2
+                else:
+                    self.playButton = gameFont5x5small.render("Play", False, LIGHTGREY)
 
-                    if self.optionsButtonRect.collidepoint(mousePos):
-                        self.optionsButton = gameFont5x5small.render("options", False, LIGHTLIGHTGREY)
-                        self.placement = self.optionsButtonRect.y - self.optionsButtonRect.height/2
-                    else:
-                        self.optionsButton = gameFont5x5small.render("options", False, LIGHTGREY)
+                if self.optionsButtonRect.collidepoint(mousePos):
+                    self.optionsButton = gameFont5x5small.render("options", False, LIGHTLIGHTGREY)
+                    self.placement = self.optionsButtonRect.y - self.optionsButtonRect.height/2
+                else:
+                    self.optionsButton = gameFont5x5small.render("options", False, LIGHTGREY)
 
-                    if self.creditsButtonRect.collidepoint(mousePos):
-                        self.creditsButton = gameFont5x5small.render("Credits", False, LIGHTLIGHTGREY)
-                        self.placement = self.creditsButtonRect.y - self.creditsButtonRect.height/2
-                    else:
-                        self.creditsButton = gameFont5x5small.render("Credits", False, LIGHTGREY)
+                if self.creditsButtonRect.collidepoint(mousePos):
+                    self.creditsButton = gameFont5x5small.render("Credits", False, LIGHTLIGHTGREY)
+                    self.placement = self.creditsButtonRect.y - self.creditsButtonRect.height/2
+                else:
+                    self.creditsButton = gameFont5x5small.render("Credits", False, LIGHTGREY)
 
                 if self.player1menu.y != self.placement:
                     if self.player1menu.y > self.placement:
@@ -240,9 +269,6 @@ class Menu:
                 else:
                     self.modeButtonAction = gameFont5x5small.render(self.gamemode, False, LIGHTGREY)
 
-
-
-
             self.draw()
             self.particleSpawner.update()
 
@@ -258,13 +284,17 @@ class Menu:
                             if not self.optionsOpen:
                                 print("play")
                         elif self.optionsButtonRect.collidepoint(mousePos):
-                            if self.optionsOpen:
-                                self.setupOptions("close")
-                            else:
-                                self.setupOptions("open")
+                                if self.optionsOpen:
+                                    self.setupOptions("close")
+                                else:
+                                    self.setupCredits("close")
+                                    self.setupOptions("open")
                         elif self.creditsButtonRect.collidepoint(mousePos):
-                            if not self.optionsOpen:
-                                print("credits")
+                                if self.creditsOpen:
+                                    self.setupCredits("close")
+                                else:
+                                    self.setupOptions("close")
+                                    self.setupCredits("open")
 
                         if self.optionsOpen:
                             if self.sfxButtonActionRect.collidepoint(mousePos):
@@ -280,7 +310,6 @@ class Menu:
                                 else:
                                     self.particleSetting = "on"
                                     self.particleSpawner.spawnParticles(LIGHTRED, mousePos[0], mousePos[1], "corner")
-
                             self.reRenderSettings()
 
                             if self.modeButtonActionRect.collidepoint(mousePos):
