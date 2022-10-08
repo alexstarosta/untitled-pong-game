@@ -12,9 +12,9 @@ from elements import *
 from game import *
 
 # starting game function
-def startGame():
+def startGame(gamemode, sfx, particle):
     gamestate = "inactive"
-    game = Game(gamestate)
+    game = Game(gamestate, gamemode, sfx, particle)
     game.setup()
     game.run()
 
@@ -303,7 +303,7 @@ class Menu:
                 if self.counter > 3:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if self.playButtonRect.collidepoint(mousePos):
-                            startGame()
+                            startGame(self.gamemode, self.sfxSetting, self.particleSetting)
                         elif self.optionsButtonRect.collidepoint(mousePos):
                                 if self.optionsOpen:
                                     self.setupOptions("close")

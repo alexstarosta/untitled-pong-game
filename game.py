@@ -11,11 +11,14 @@ from settings import *
 from elements import *
 
 class Game:
-    def __init__(self, gamestate):
+    def __init__(self, gamestate, gamemode, sfx, particle):
         pygame.font.init()
         self.screen = pygame.display.set_mode((WIDTH,HEIGHT))
         pygame.display.set_caption(TITLE)
         self.clock = pygame.time.Clock()
+        self.gameMode = gamemode
+        self.sfx = sfx
+        self.particles = particle
         self.gamestate = gamestate
         self.gameCountdown = 3
         self.score = [0,0]
@@ -23,11 +26,13 @@ class Game:
     def setup(self):
         self.elements = pygame.sprite.Group()
         self.ballElements = pygame.sprite.Group()
+
+        if self.particles == "on":
+            self.particleSpawner = ParticleSpawner()
+
         self.player1 = Player(self, WIDTH/50, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 1)
         self.player2 = Player(self, WIDTH - 2*WIDTH/50 + 1, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 2)
         self.ball = Ball(self, WIDTH/2, HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50)
-
-        self.particleSpawner = ParticleSpawner()
 
         gameFont5x5 = pygame.font.Font("bit5x5.ttf", 172)
         self.startingText = gameFont5x5.render(f"{self.gameCountdown}", False, LIGHTGREY)
@@ -55,7 +60,8 @@ class Game:
         self.screen.blit(self.startingText, self.startingTextRect)
         self.screen.blit(self.score1, self.score1Rect)
         self.screen.blit(self.score2, self.score2Rect)
-        self.particleSpawner.particleGroup.draw(self.screen)
+        if self.particles == "on":
+            self.particleSpawner.particleGroup.draw(self.screen)
         pygame.display.flip()
 
     def drawCountdown(self, text):
@@ -93,7 +99,8 @@ class Game:
             self.ballElements.update()
             self.draw()
 
-            self.particleSpawner.update()
+            if self.particles == "on":
+                self.particleSpawner.update()
 
             self.gameCountdown -= self.tickspeed
             

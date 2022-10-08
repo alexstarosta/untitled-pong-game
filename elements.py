@@ -141,10 +141,11 @@ class Ball(pygame.sprite.Sprite):
             self.xVel = abs(self.xVel)
             if self.side == "unknown" or self.side == "left":
                 self.calcYVel(self.game.elements.sprites()[0], self.game.elements.sprites()[1], self.y, self.x, "left")
-                if self.angle > 41 or self.angle < -41:
-                    self.game.particleSpawner.spawnParticles(BLUE, self.rect.x, self.y, "corner")
-                else:
-                    self.game.particleSpawner.spawnParticles(BLUE, self.game.elements.sprites()[0].rect.right, self.y, "left")
+                if hasattr(self.game, 'particleSpawner'):
+                    if self.angle > 41 or self.angle < -41:
+                        self.game.particleSpawner.spawnParticles(BLUE, self.rect.x, self.y, "corner")
+                    else:
+                        self.game.particleSpawner.spawnParticles(BLUE, self.game.elements.sprites()[0].rect.right, self.y, "left")
                 self.side = "right"
                 self.increaseSpeed(0.2)
                 self.bounceCount += 1
@@ -152,10 +153,11 @@ class Ball(pygame.sprite.Sprite):
             self.xVel = -abs(self.xVel)
             if self.side == "unknown" or self.side == "right":
                 self.calcYVel(self.game.elements.sprites()[0], self.game.elements.sprites()[1], self.y, self.x, "right")
-                if self.angle > 41 or self.angle < -41:
-                    self.game.particleSpawner.spawnParticles(RED, self.rect.x, self.y, "corner")
-                else:
-                    self.game.particleSpawner.spawnParticles(RED, self.game.elements.sprites()[1].rect.left, self.y, "right")
+                if hasattr(self.game, 'particleSpawner'):
+                    if self.angle > 41 or self.angle < -41:
+                        self.game.particleSpawner.spawnParticles(RED, self.rect.x, self.y, "corner")
+                    else:
+                        self.game.particleSpawner.spawnParticles(RED, self.game.elements.sprites()[1].rect.left, self.y, "right")
                 self.side = "left"
                 self.increaseSpeed(0.2)
                 self.bounceCount += 1
