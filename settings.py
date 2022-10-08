@@ -5,6 +5,9 @@
 ##
 
 # COLORS
+from pickle import FALSE
+
+
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 LIGHTGREY = (110, 110, 110)
@@ -21,6 +24,7 @@ WIDTH = 1024
 HEIGHT = 768 
 FPS = 60
 TITLE = "Untitled Pong Game"
+GAMEACTIVE = False
 
 # ELEMENTS options
 

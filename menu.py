@@ -9,6 +9,14 @@ import pygame
 import sys
 from settings import *
 from elements import *
+from game import *
+
+# starting game function
+def startGame():
+    gamestate = "inactive"
+    game = Game(gamestate)
+    game.setup()
+    game.run()
 
 class Menu:
     def __init__(self):
@@ -295,8 +303,7 @@ class Menu:
                 if self.counter > 3:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if self.playButtonRect.collidepoint(mousePos):
-                            if not self.optionsOpen:
-                                print("play")
+                            startGame()
                         elif self.optionsButtonRect.collidepoint(mousePos):
                                 if self.optionsOpen:
                                     self.setupOptions("close")
