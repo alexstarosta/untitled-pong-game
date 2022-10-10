@@ -5,6 +5,7 @@
 ##
 
 import math
+from re import S
 import pygame
 import sys
 from settings import *
@@ -34,6 +35,14 @@ class Game:
         self.player2 = Player(self, WIDTH - 2*WIDTH/50 + 1, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 2)
         self.ball = Ball(self, WIDTH/2, HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50)
 
+        self.wsd1nonscaled = pygame.image.load("wsd1.png")
+        self.wsd1 = pygame.transform.scale(self.wsd1nonscaled, (220,220))
+        self.wsd1Rect = self.wsd1.get_rect(center = (WIDTH/2 - 200,HEIGHT/4))
+
+        self.udl1nonscaled = pygame.image.load("updownleft1.png")
+        self.udl1 = pygame.transform.scale(self.udl1nonscaled, (220,220))
+        self.udl1Rect = self.udl1.get_rect(center = (WIDTH/2 + 200,HEIGHT/4))
+
         gameFont5x5 = pygame.font.Font("bit5x5.ttf", 172)
         self.startingText = gameFont5x5.render(f"{self.gameCountdown}", False, LIGHTGREY)
         self.startingTextRect = self.startingText.get_rect(center = (WIDTH/1.92, HEIGHT/4))
@@ -60,6 +69,10 @@ class Game:
         self.screen.blit(self.startingText, self.startingTextRect)
         self.screen.blit(self.score1, self.score1Rect)
         self.screen.blit(self.score2, self.score2Rect)
+
+        self.screen.blit(self.wsd1, self.wsd1Rect)
+        self.screen.blit(self.udl1, self.udl1Rect)
+
         if self.particles == "on":
             self.particleSpawner.particleGroup.draw(self.screen)
         pygame.display.flip()
