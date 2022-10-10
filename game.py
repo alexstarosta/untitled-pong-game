@@ -21,10 +21,12 @@ class Game:
         self.sfx = sfx
         self.particles = particle
         self.gamestate = gamestate
+        self.keycheck = True
         self.gameCountdown = 3
         self.score = [0,0]
 
     def setup(self):
+
         self.elements = pygame.sprite.Group()
         self.ballElements = pygame.sprite.Group()
 
@@ -33,7 +35,7 @@ class Game:
 
         self.player1 = Player(self, WIDTH/50, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 1)
         self.player2 = Player(self, WIDTH - 2*WIDTH/50 + 1, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 2)
-        self.ball = Ball(self, WIDTH/2, HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50)
+        self.ball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50)
 
         self.wsd1nonscaled = pygame.image.load("wsd1.png")
         self.wsd1 = pygame.transform.scale(self.wsd1nonscaled, (220,220))
@@ -44,8 +46,8 @@ class Game:
         self.udl1Rect = self.udl1.get_rect(center = (WIDTH/2 + 200,HEIGHT/4))
 
         gameFont5x5 = pygame.font.Font("bit5x5.ttf", 172)
-        self.startingText = gameFont5x5.render(f"{self.gameCountdown}", False, LIGHTGREY)
-        self.startingTextRect = self.startingText.get_rect(center = (WIDTH/1.92, HEIGHT/4))
+        self.startingText = gameFont5x5.render("", False, LIGHTGREY)
+        self.startingTextRect = self.startingText.get_rect(center = (WIDTH/1.92 - ((WIDTH/50)/2), HEIGHT/4))
 
         gameFont5x3 = pygame.font.Font("bit5x3.ttf", 112)
         if self.score[0] < 10:
@@ -63,6 +65,15 @@ class Game:
         self.draw()
 
     def draw(self):
+
+        def changeColor(image, color):
+            colouredImage = pygame.Surface(image.get_size())
+            colouredImage.fill(color)
+        
+            finalImage = image.copy()
+            finalImage.blit(colouredImage, (0, 0), special_flags = pygame.BLEND_MULT)
+            return finalImage
+
         self.screen.fill(DARKGREY)
         self.elements.draw(self.screen)
         self.ballElements.draw(self.screen)
@@ -70,8 +81,8 @@ class Game:
         self.screen.blit(self.score1, self.score1Rect)
         self.screen.blit(self.score2, self.score2Rect)
 
-        self.screen.blit(self.wsd1, self.wsd1Rect)
-        self.screen.blit(self.udl1, self.udl1Rect)
+        self.screen.blit(changeColor(self.wsd1, LIGHTGREY), self.wsd1Rect)
+        self.screen.blit(changeColor(self.udl1, LIGHTGREY), self.udl1Rect)
 
         if self.particles == "on":
             self.particleSpawner.particleGroup.draw(self.screen)
@@ -80,7 +91,7 @@ class Game:
     def drawCountdown(self, text):
         gameFont = pygame.font.Font("bit5x5.ttf", 172)
         self.startingText = gameFont.render(f"{text}", False, LIGHTGREY)
-        self.startingTextRect = self.startingText.get_rect(center = (WIDTH/1.92, HEIGHT/4))
+        self.startingTextRect = self.startingText.get_rect(center = (WIDTH/1.92 - ((WIDTH/50)/2), HEIGHT/4))
 
         self.screen.blit(self.startingText, self.startingTextRect)
         pygame.display.flip() 
@@ -115,21 +126,22 @@ class Game:
             if self.particles == "on":
                 self.particleSpawner.update()
 
-            self.gameCountdown -= self.tickspeed
-            
-            if self.gameCountdown >= -3:
-                if math.ceil(self.gameCountdown) == 3:
-                    self.drawCountdown(3)
-                elif math.ceil(self.gameCountdown) == 2:
-                    self.drawCountdown(2) 
-                elif math.ceil(self.gameCountdown) == 1:
-                    self.drawCountdown(1)
-                elif math.ceil(self.gameCountdown) == 0 and self.gameState == "playing":
-                    self.drawCountdown("GO!")
-                    self.ball.startGame()
-                    self.gameState = "active"
-                elif math.ceil(self.gameCountdown) == -1:
-                    self.drawCountdown("")
+            if self.keycheck:
+                self.gameCountdown -= self.tickspeed
+    
+                if self.gameCountdown >= -3:
+                    if math.ceil(self.gameCountdown) == 3:
+                        self.drawCountdown(3)
+                    elif math.ceil(self.gameCountdown) == 2:
+                        self.drawCountdown(2) 
+                    elif math.ceil(self.gameCountdown) == 1:
+                        self.drawCountdown(1)
+                    elif math.ceil(self.gameCountdown) == 0 and self.gameState == "playing":
+                        self.drawCountdown("GO!")
+                        self.ball.startGame()
+                        self.gameState = "active"
+                    elif math.ceil(self.gameCountdown) == -1:
+                        self.drawCountdown("")
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

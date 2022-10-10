@@ -202,7 +202,7 @@ class Ball(pygame.sprite.Sprite):
                 self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * 1.2
             else:
                 self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * -1.2          
-
+        print(self.angle)
     def update(self):
         self.checkWalls()
         self.y += self.yVel
