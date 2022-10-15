@@ -41,6 +41,14 @@ class Game:
         self.wsd1 = pygame.transform.scale(self.wsd1nonscaled, (220,220))
         self.wsd1Rect = self.wsd1.get_rect(center = (WIDTH/2 - 200,HEIGHT/4))
 
+        self.wkeyCheck = KeybindChecker(self, "w", WIDTH/4 - 50, HEIGHT/3 - 170, 100, 100, DARKBLUE)
+        self.skeyCheck = KeybindChecker(self, "s", WIDTH/4 - 50, HEIGHT/3 - 60, 100, 100, DARKBLUE)
+        self.dkeyCheck = KeybindChecker(self, "d", WIDTH/4 + 60, HEIGHT/3 - 120, 100, 100, DARKBLUE)
+
+        self.upkeyCheck = KeybindChecker(self, "up", WIDTH/2 + WIDTH/4 - 50, HEIGHT/3 - 170, 100, 100, DARKRED)
+        self.downkeyCheck = KeybindChecker(self, "down", WIDTH/2 + WIDTH/4 - 50, HEIGHT/3 - 60, 100, 100, DARKRED)
+        self.leftkeyCheck = KeybindChecker(self, "left", WIDTH/2 + WIDTH/4 - 160, HEIGHT/3 - 120, 100, 100, DARKRED)
+
         self.udl1nonscaled = pygame.image.load("updownleft1.png")
         self.udl1 = pygame.transform.scale(self.udl1nonscaled, (220,220))
         self.udl1Rect = self.udl1.get_rect(center = (WIDTH/2 + 200,HEIGHT/4))

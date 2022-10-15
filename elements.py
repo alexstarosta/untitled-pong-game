@@ -202,7 +202,7 @@ class Ball(pygame.sprite.Sprite):
                 self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * 1.2
             else:
                 self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * -1.2          
-        print(self.angle)
+        print(abs(self.yVel) + abs(self.xVel))
     def update(self):
         self.checkWalls()
         self.y += self.yVel
@@ -272,3 +272,56 @@ class ParticleSpawner:
             particle.rect.x = x
             particle.rect.y = y
             self.particleGroup.add(particle)
+
+class KeybindChecker(pygame.sprite.Sprite):
+    def __init__(self, game, key, x, y, length, width, color):
+        self.groups = game.ballElements
+        pygame.sprite.Sprite.__init__(self, self.groups)
+        self.image = pygame.Surface([length, width])
+        self.image.fill(color)
+        self.image.set_alpha(0)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.key = key
+        self.fadeIn = False
+        self.clock = pygame.time.Clock()
+        self.counter = 0
+
+    def easeOutQuad(self, num):
+        return 1 - (1 - num) * (1 - num)
+
+    def update(self):
+        self.tickspeed = self.clock.tick(FPS) / 1000.0
+        if self.fadeIn:
+            self.counter += self.tickspeed
+            self.alpha = 255 * self.easeOutQuad(self.counter)
+            self.image.set_alpha(self.alpha)
+            if self.alpha >= 254:
+                self.fadeIn = False
+
+        keys = pygame.key.get_pressed()
+        if self.key == "w":
+            if keys[pygame.K_w]:
+                self.counter = 0
+                self.fadeIn = True
+        if self.key == "s":
+            if keys[pygame.K_s]:
+                self.counter = 0
+                self.fadeIn = True
+        if self.key == "d":
+            if keys[pygame.K_d]:
+                self.counter = 0
+                self.fadeIn = True
+        if self.key == "up":
+            if keys[pygame.K_UP]:
+                self.counter = 0
+                self.fadeIn = True
+        if self.key == "down":
+            if keys[pygame.K_DOWN]:
+                self.counter = 0
+                self.fadeIn = True
+        if self.key == "left":
+            if keys[pygame.K_LEFT]:
+                self.counter = 0
+                self.fadeIn = True
