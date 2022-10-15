@@ -284,44 +284,57 @@ class KeybindChecker(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.key = key
+        self.clicked = False
         self.fadeIn = False
+        self.hidden = False
         self.clock = pygame.time.Clock()
         self.counter = 0
 
     def easeOutQuad(self, num):
         return 1 - (1 - num) * (1 - num)
 
-    def update(self):
-        self.tickspeed = self.clock.tick(FPS) / 1000.0
-        if self.fadeIn:
-            self.counter += self.tickspeed
-            self.alpha = 255 * self.easeOutQuad(self.counter)
-            self.image.set_alpha(self.alpha)
-            if self.alpha >= 254:
-                self.fadeIn = False
+    def hide(self):
+        self.hidden = True
+        self.image.set_alpha(0)
 
-        keys = pygame.key.get_pressed()
-        if self.key == "w":
-            if keys[pygame.K_w]:
-                self.counter = 0
-                self.fadeIn = True
-        if self.key == "s":
-            if keys[pygame.K_s]:
-                self.counter = 0
-                self.fadeIn = True
-        if self.key == "d":
-            if keys[pygame.K_d]:
-                self.counter = 0
-                self.fadeIn = True
-        if self.key == "up":
-            if keys[pygame.K_UP]:
-                self.counter = 0
-                self.fadeIn = True
-        if self.key == "down":
-            if keys[pygame.K_DOWN]:
-                self.counter = 0
-                self.fadeIn = True
-        if self.key == "left":
-            if keys[pygame.K_LEFT]:
-                self.counter = 0
-                self.fadeIn = True
+    def update(self):
+        if self.hidden == False:
+            self.tickspeed = self.clock.tick(FPS) / 1000.0
+            if self.fadeIn:
+                self.counter += self.tickspeed * 2
+                self.alpha = 255 * self.easeOutQuad(self.counter)
+                self.image.set_alpha(self.alpha)
+                if self.alpha >= 254:
+                    self.fadeIn = False
+
+            keys = pygame.key.get_pressed()
+            if self.key == "w":
+                if keys[pygame.K_w]:
+                    self.counter = 0
+                    self.fadeIn = True
+                    self.clicked = True
+            if self.key == "s":
+                if keys[pygame.K_s]:
+                    self.counter = 0
+                    self.fadeIn = True
+                    self.clicked = True
+            if self.key == "d":
+                if keys[pygame.K_d]:
+                    self.counter = 0
+                    self.fadeIn = True
+                    self.clicked = True
+            if self.key == "up":
+                if keys[pygame.K_UP]:
+                    self.counter = 0
+                    self.fadeIn = True
+                    self.clicked = True
+            if self.key == "down":
+                if keys[pygame.K_DOWN]:
+                    self.counter = 0
+                    self.fadeIn = True
+                    self.clicked = True
+            if self.key == "left":
+                if keys[pygame.K_LEFT]:
+                    self.counter = 0
+                    self.fadeIn = True
+                    self.clicked = True

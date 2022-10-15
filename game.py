@@ -21,8 +21,9 @@ class Game:
         self.sfx = sfx
         self.particles = particle
         self.gamestate = gamestate
-        self.keycheck = True
-        self.gameCountdown = 3
+        self.leftReady = False
+        self.rightReady = False
+        self.gameCountdown = 5
         self.score = [0,0]
 
     def setup(self):
@@ -89,8 +90,15 @@ class Game:
         self.screen.blit(self.score1, self.score1Rect)
         self.screen.blit(self.score2, self.score2Rect)
 
-        self.screen.blit(changeColor(self.wsd1, LIGHTGREY), self.wsd1Rect)
-        self.screen.blit(changeColor(self.udl1, LIGHTGREY), self.udl1Rect)
+        if self.leftReady:
+            self.screen.blit(changeColor(self.wsd1, BLUE), self.wsd1Rect)
+        else:
+            self.screen.blit(changeColor(self.wsd1, LIGHTGREY), self.wsd1Rect)
+
+        if self.rightReady:
+            self.screen.blit(changeColor(self.udl1, RED), self.udl1Rect)
+        else:
+            self.screen.blit(changeColor(self.udl1, LIGHTGREY), self.udl1Rect)
 
         if self.particles == "on":
             self.particleSpawner.particleGroup.draw(self.screen)
@@ -122,6 +130,18 @@ class Game:
         self.screen.blit(self.score2, self.score2Rect)
         pygame.display.flip() 
 
+    def hidekeybinds(self):
+        self.udl1.set_alpha(0)
+        self.wsd1.set_alpha(0)
+
+        self.wkeyCheck.hide()
+        self.skeyCheck.hide()
+        self.dkeyCheck.hide()
+
+        self.upkeyCheck.hide()
+        self.downkeyCheck.hide()
+        self.leftkeyCheck.hide()
+
     def run(self):
         self.playing = True
         self.gameState = "playing"
@@ -131,13 +151,21 @@ class Game:
             self.ballElements.update()
             self.draw()
 
+            if self.wkeyCheck.clicked and self.skeyCheck.clicked and self.dkeyCheck.clicked:
+                self.leftReady = True
+
+            if self.upkeyCheck.clicked and self.downkeyCheck.clicked and self.leftkeyCheck.clicked:
+                self.rightReady = True
+
             if self.particles == "on":
                 self.particleSpawner.update()
 
-            if self.keycheck:
+            if self.leftReady and self.rightReady:
                 self.gameCountdown -= self.tickspeed
     
-                if self.gameCountdown >= -3:
+                if self.gameCountdown >= -4:
+                    if math.ceil(self.gameCountdown) == 4:
+                        self.hidekeybinds()
                     if math.ceil(self.gameCountdown) == 3:
                         self.drawCountdown(3)
                     elif math.ceil(self.gameCountdown) == 2:

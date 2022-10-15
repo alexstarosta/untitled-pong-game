@@ -348,8 +348,7 @@ class Menu:
                                     self.gamemode = "bot 1v1"
                                 elif self.gamemode == "bot 1v1":
                                     self.gamemode = "1 player"
-                            self.reRenderSettings()
-                    
+                            self.reRenderSettings() 
 
     def quit(self):
         pygame.quit()
