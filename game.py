@@ -30,16 +30,16 @@ class Game:
         self.gamestate = gamestate
         if gamemode == "bot 1v1":
             self.leftReady = True
-            self.leftUpdateTime = random.randint(5,20)
-            self.leftRandomSpace = random.randint(0,40)
+            self.leftUpdateTime = random.randint(2,12)
+            self.leftRandomSpace = random.randint(0,10)
             self.leftTargeting = random.randint(0,20)
         else:
             self.leftReady = False
         if gamemode == "1 player" or gamemode == "bot 1v1":
             self.rightReady = True
-            self.rightUpdateTime = random.randint(5,20)
-            self.rightRandomSpace = random.randint(0,40)
-            self.rightTargeting = random.randint(0,20)
+            self.rightUpdateTime = random.randint(2,12)
+            self.rightRandomSpace = random.randint(0,10)
+            self.rightTargeting = random.randint(20,50)
         else:
             self.rightReady = False
         self.gameCountdown = 6
@@ -196,27 +196,29 @@ class Game:
 
             if self.gamemode == "bot 1v1":
                 if self.counter%self.leftUpdateTime == 0:
+                    if self.ball.y + self.leftTargeting == self.player1.y or self.ball.y - self.leftTargeting == self.player1.y:
+                            self.player1.up = False
+                            self.player1.down = False
+                            break
                     if self.ball.y + random.uniform(-1*self.leftRandomSpace,self.leftRandomSpace) < self.player1.y + self.player1.height/2 + random.uniform(-self.leftRandomSpace,self.leftRandomSpace):
                         self.player1.up = True
                         self.player1.down = False
                     else:
                         self.player1.up = False
                         self.player1.down = True
-                    if self.ball.y + self.leftTargeting == self.player1.y or self.ball.y - self.leftTargeting == self.player1.y:
-                            self.player1.up = False
-                            self.player1.down = False
 
             if self.gamemode == "1 player" or self.gamemode == "bot 1v1":
                 if self.counter%self.rightUpdateTime == 0:
-                    if self.ball.y + random.uniform(-1*self.rightRandomSpace,self.rightRandomSpace) < self.player2.y + self.player2.height/2 + random.uniform(-self.rightRandomSpace,self.rightRandomSpace):
-                        self.player2.up = True
-                        self.player2.down = False
-                    else:
-                        self.player2.up = False
-                        self.player2.down = True
-                    if self.ball.y + self.rightTargeting == self.player2.y or self.ball.y - self.rightTargeting == self.player2.y:
+                    if self.ball.y >= self.player2.y + self.player2.height/2 - self.rightTargeting and self.ball.y <= self.player2.y + self.player2.height/2 + self.rightTargeting and abs(self.ball.x - self.player2.x) < 100:
                             self.player2.up = False
                             self.player2.down = False
+                    else:
+                        if self.ball.y + random.uniform(-1*self.rightRandomSpace,self.rightRandomSpace) < self.player2.y + self.player2.height/2 + random.uniform(-self.rightRandomSpace,self.rightRandomSpace):
+                            self.player2.up = True
+                            self.player2.down = False
+                        else:
+                            self.player2.up = False
+                            self.player2.down = True
 
             if self.wkeyCheck.clicked and self.skeyCheck.clicked and self.dkeyCheck.clicked:
                 self.leftReady = True

@@ -27,6 +27,7 @@ class Player(pygame.sprite.Sprite):
         self.gamemode = gamemode
         self.rect.x = x
         self.rect.y = y
+        self.x = x
         self.y = y
         self.up = False
         self.down = False
