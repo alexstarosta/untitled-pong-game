@@ -4,7 +4,6 @@
 ##  Alex Starosta
 ##
 
-from pickle import REDUCE
 import pygame
 import sys
 from settings import *
@@ -13,22 +12,29 @@ from game import *
 
 # starting game function
 def startGame(gamemode, sfx, particle):
+    from game import Game
     gamestate = "inactive"
     game = Game(gamestate, gamemode, sfx, particle)
     game.setup()
     game.run()
 
+def updateValues(sfx, particles, gamemode):
+    import settings
+    settings.SFX = sfx
+    settings.PARTICLES = particles
+    settings.GAMEMODE = gamemode
+
 class Menu:
-    def __init__(self):
+    def __init__(self, sfx, particle, gamemode):
         pygame.font.init()
         self.screen = pygame.display.set_mode((WIDTH,HEIGHT))
         pygame.display.set_caption(TITLE)
         self.clock = pygame.time.Clock()
         self.optionsOpen = False
         self.creditsOpen = False
-        self.sfxSetting = "on"
-        self.particleSetting = "on"
-        self.gamemode = "1 player"
+        self.sfxSetting = sfx
+        self.particleSetting = particle
+        self.gamemode = gamemode
         self.oclick = 0
         self.ofall = False
         self.ofallspeed = 0
@@ -68,8 +74,8 @@ class Menu:
         self.creditsButton = gameFont5x5small.render("Credits", False, LIGHTGREY)
         self.creditsButtonRect = self.creditsButton.get_rect(center = (WIDTH/2, HEIGHT/2 + 250))
 
-        self.player1menu = Player(self, WIDTH/2 + self.playButtonRect.width * 1.5 - 7, self.playButtonRect.y - self.playButtonRect.height/2, WIDTH/100, HEIGHT/15, "menu1")
-        self.player2menu = Player(self, WIDTH/2 - self.playButtonRect.width * 1.5 - 7, self.playButtonRect.y - self.playButtonRect.height/2, WIDTH/100, HEIGHT/15, "menu2")
+        self.player1menu = Player(self, WIDTH/2 + self.playButtonRect.width * 1.5 - 7, self.playButtonRect.y - self.playButtonRect.height/2, WIDTH/100, HEIGHT/15, "menu1", "2 player")
+        self.player2menu = Player(self, WIDTH/2 - self.playButtonRect.width * 1.5 - 7, self.playButtonRect.y - self.playButtonRect.height/2, WIDTH/100, HEIGHT/15, "menu2", "2 player")
 
         self.cover = pygame.Surface([WIDTH, HEIGHT* 0.6])
         self.cover.fill(DARKGREY)
@@ -303,6 +309,7 @@ class Menu:
                 if self.counter > 3:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if self.playButtonRect.collidepoint(mousePos):
+                            updateValues(self.sfxSetting, self.particleSetting, self.gamemode)
                             startGame(self.gamemode, self.sfxSetting, self.particleSetting)
                         elif self.optionsButtonRect.collidepoint(mousePos):
                                 if self.optionsOpen:

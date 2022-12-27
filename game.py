@@ -5,11 +5,18 @@
 ##
 
 import math
-from re import S
 import pygame
 import sys
 from settings import *
 from elements import *
+from menu import *
+
+def backToMenu():
+    from menu import Menu
+    import settings
+    menu = Menu(settings.SFX, settings.PARTICLES, settings.GAMEMODE)
+    menu.setup()
+    menu.run()
 
 class Game:
     def __init__(self, gamestate, gamemode, sfx, particle):
@@ -17,14 +24,27 @@ class Game:
         self.screen = pygame.display.set_mode((WIDTH,HEIGHT))
         pygame.display.set_caption(TITLE)
         self.clock = pygame.time.Clock()
-        self.gameMode = gamemode
+        self.gamemode = gamemode
         self.sfx = sfx
         self.particles = particle
         self.gamestate = gamestate
-        self.leftReady = False
-        self.rightReady = False
+        if gamemode == "bot 1v1":
+            self.leftReady = True
+            self.leftUpdateTime = random.randint(1,10)
+            self.leftRandomSpace = random.randint(0,40)
+            self.leftTargeting = random.randint(0,20)
+        else:
+            self.leftReady = False
+        if gamemode == "1 player" or gamemode == "bot 1v1":
+            self.rightReady = True
+            self.rightUpdateTime = random.randint(1,10)
+            self.rightRandomSpace = random.randint(0,40)
+            self.rightTargeting = random.randint(0,20)
+        else:
+            self.rightReady = False
         self.gameCountdown = 5
         self.score = [0,0]
+        self.counter = 0
 
     def setup(self):
 
@@ -34,9 +54,9 @@ class Game:
         if self.particles == "on":
             self.particleSpawner = ParticleSpawner()
 
-        self.player1 = Player(self, WIDTH/50, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 1)
-        self.player2 = Player(self, WIDTH - 2*WIDTH/50 + 1, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 2)
-        self.ball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50)
+        self.player1 = Player(self, WIDTH/50, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 1, self.gamemode)
+        self.player2 = Player(self, WIDTH - 2*WIDTH/50 + 1, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 2, self.gamemode)
+        self.ball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50, LIGHTGREY)
 
         self.wsd1nonscaled = pygame.image.load("wsd1.png")
         self.wsd1 = pygame.transform.scale(self.wsd1nonscaled, (220,220))
@@ -150,6 +170,35 @@ class Game:
             self.elements.update()
             self.ballElements.update()
             self.draw()
+
+            if self.score[0] == 5 or self.score[1] == 5:
+                backToMenu()
+
+            self.counter += 1
+
+            if self.gamemode == "bot 1v1":
+                if self.counter%self.leftUpdateTime == 0:
+                    if self.ball.y + random.uniform(-1*self.leftRandomSpace,self.leftRandomSpace) < self.player1.y + self.player1.height/2 + random.uniform(-self.leftRandomSpace,self.leftRandomSpace):
+                        self.player1.up = True
+                        self.player1.down = False
+                    else:
+                        self.player1.up = False
+                        self.player1.down = True
+                    if self.ball.y + self.leftTargeting == self.player1.y or self.ball.y - self.leftTargeting == self.player1.y:
+                            self.player1.up = False
+                            self.player1.down = False
+
+            if self.gamemode == "1 player" or self.gamemode == "bot 1v1":
+                if self.counter%self.rightUpdateTime == 0:
+                    if self.ball.y + random.uniform(-1*self.rightRandomSpace,self.rightRandomSpace) < self.player2.y + self.player2.height/2 + random.uniform(-self.rightRandomSpace,self.rightRandomSpace):
+                        self.player2.up = True
+                        self.player2.down = False
+                    else:
+                        self.player2.up = False
+                        self.player2.down = True
+                    if self.ball.y + self.rightTargeting == self.player2.y or self.ball.y - self.rightTargeting == self.player2.y:
+                            self.player2.up = False
+                            self.player2.down = False
 
             if self.wkeyCheck.clicked and self.skeyCheck.clicked and self.dkeyCheck.clicked:
                 self.leftReady = True

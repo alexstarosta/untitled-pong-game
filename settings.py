@@ -5,8 +5,6 @@
 ##
 
 # COLORS
-from pickle import FALSE
-
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -26,6 +24,12 @@ HEIGHT = 768
 FPS = 60
 TITLE = "Untitled Pong Game"
 GAMEACTIVE = False
+
+# PLAYER options
+
+SFX = "on"
+PARTICLES = "on"
+GAMEMODE = "1 player"
 
 # ELEMENTS options
 

@@ -11,7 +11,7 @@ import random
 from settings import *
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, game, x, y, pwidth, pheight, player):
+    def __init__(self, game, x, y, pwidth, pheight, player, gamemode):
         self.groups = game.elements
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.image = pygame.Surface([pwidth, pheight])
@@ -24,32 +24,55 @@ class Player(pygame.sprite.Sprite):
         self.direction = "none"
         self.height = pheight
         self.player = player
+        self.gamemode = gamemode
         self.rect.x = x
         self.rect.y = y
         self.y = y
+        self.up = False
+        self.down = False
 
     def getInput(self):
         if self.player == 1:
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_w]:
-                self.velocity = -PADDLE_SPEED
-                self.direction = "up"
-            if keys[pygame.K_s]:
-                self.velocity = PADDLE_SPEED
-                self.direction = "down"
-            if self.velocity != 0: 
-                self.velocity *= 0.7
+            if self.gamemode == "bot 1v1":
+                if self.up:
+                    self.velocity = -PADDLE_SPEED
+                    self.direction = "up"
+                if self.down:
+                    self.velocity = PADDLE_SPEED
+                    self.direction = "down"
+                if self.velocity != 0: 
+                    self.velocity *= 0.7
+            else:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_w]:
+                    self.velocity = -PADDLE_SPEED
+                    self.direction = "up"
+                if keys[pygame.K_s]:
+                    self.velocity = PADDLE_SPEED
+                    self.direction = "down"
+                if self.velocity != 0: 
+                    self.velocity *= 0.7
 
         if self.player == 2:
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_UP]:
-                self.velocity = -PADDLE_SPEED
-                self.direction = "up"
-            if keys[pygame.K_DOWN]:
-                self.velocity = PADDLE_SPEED
-                self.direction = "down"
-            if self.velocity != 0: 
-                self.velocity *= 0.7
+            if self.gamemode == "1 player" or self.gamemode == "bot 1v1":
+                if self.up:
+                    self.velocity = -PADDLE_SPEED
+                    self.direction = "up"
+                if self.down:
+                    self.velocity = PADDLE_SPEED
+                    self.direction = "down"
+                if self.velocity != 0: 
+                    self.velocity *= 0.7
+            else:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_UP]:
+                    self.velocity = -PADDLE_SPEED
+                    self.direction = "up"
+                if keys[pygame.K_DOWN]:
+                    self.velocity = PADDLE_SPEED
+                    self.direction = "down"
+                if self.velocity != 0: 
+                    self.velocity *= 0.7
 
     def checkPlacement(self, direction):
         if direction == "up":
@@ -69,12 +92,12 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = self.y
 
 class Ball(pygame.sprite.Sprite):
-    def __init__(self, game, x, y, xVel, yVel, bwidth, bheight):
+    def __init__(self, game, x, y, xVel, yVel, bwidth, bheight, color):
         self.groups = game.ballElements
         self.game = game
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.image = pygame.Surface([bwidth, bheight])
-        self.image.fill(LIGHTGREY)
+        self.image.fill(color)
         self.rect = self.image.get_rect()
         self.rect.center = (x,y)
         self.width = bwidth
@@ -202,7 +225,7 @@ class Ball(pygame.sprite.Sprite):
                 self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * 1.2
             else:
                 self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * -1.2          
-        print(abs(self.yVel) + abs(self.xVel))
+
     def update(self):
         self.checkWalls()
         self.y += self.yVel
@@ -214,7 +237,7 @@ class Particle(pygame.sprite.Sprite):
     def __init__(self, color, position):
         super(Particle, self).__init__()
         if position == "title":
-            self.width = random.randrange(15,19)*1.5
+            self.width = random.randrange(15,19)*1.25
         else:
             self.width = random.randrange(15,19)
         self.originWidth = self.width
@@ -235,9 +258,9 @@ class Particle(pygame.sprite.Sprite):
         else:
             self.yVel = random.uniform(-8, 8)
         if position == "title":
-            self.killTimer = random.randint(5,10)*3
+            self.killTimer = random.randint(10,12)*2
         else:
-            self.killTimer = random.randint(5,10)
+            self.killTimer = random.randint(10,15)
         self.startTimer = self.killTimer
         self.updateCount = 0
         
