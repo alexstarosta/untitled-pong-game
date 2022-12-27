@@ -44,8 +44,8 @@ class Menu:
 
         self.particleSpawner = ParticleSpawner()
 
-        gameFont5x5small = pygame.font.Font("bit5x5.ttf", 32)
-        gameFont5x5large = pygame.font.Font("bit5x5.ttf", 124)
+        gameFont5x5small = pygame.font.Font("assets/bit5x5.ttf", 32)
+        gameFont5x5large = pygame.font.Font("assets/bit5x5.ttf", 124)
 
         self.widthAdj = 50
         self.heightAdj = -175
@@ -127,7 +127,7 @@ class Menu:
 
     def setupOptions(self, state):
         if state == "open":
-            gameFont5x5small = pygame.font.Font("bit5x5.ttf", 32)
+            gameFont5x5small = pygame.font.Font("assets/bit5x5.ttf", 32)
 
             self.modeButton = gameFont5x5small.render("Mode:", False, LIGHTGREY)
             self.modeButtonRect = self.modeButton.get_rect(midright = (WIDTH/2 + 175, HEIGHT/2 + 100))
@@ -157,8 +157,8 @@ class Menu:
 
     def setupCredits(self, state):
         if state == "open":
-            gameFont5x5small = pygame.font.Font("bit5x5.ttf", 32)
-            gameFont5x5smallsmall = pygame.font.Font("bit5x5.ttf", 26)
+            gameFont5x5small = pygame.font.Font("assets/bit5x5.ttf", 32)
+            gameFont5x5smallsmall = pygame.font.Font("assets/bit5x5.ttf", 26)
 
             self.credit1 = gameFont5x5smallsmall.render("a Game by", False, LIGHTGREY)
             self.credit1Rect = self.credit1.get_rect(midleft = (WIDTH/2 - 50, HEIGHT/2 + 100))
@@ -181,7 +181,7 @@ class Menu:
             self.updateMenuItems(0)
 
     def reRenderSettings(self):
-        gameFont5x5small = pygame.font.Font("bit5x5.ttf", 32)
+        gameFont5x5small = pygame.font.Font("assets/bit5x5.ttf", 32)
 
         self.modeButtonAction = gameFont5x5small.render(self.gamemode, False, LIGHTGREY)
 
@@ -201,7 +201,7 @@ class Menu:
         self.counter = 0
         self.placement = self.playButtonRect.y - self.playButtonRect.height/2
 
-        gameFont5x5small = pygame.font.Font("bit5x5.ttf", 32)
+        gameFont5x5small = pygame.font.Font("assets/bit5x5.ttf", 32)
         while self.menuOpen:
             self.tickspeed = self.clock.tick(FPS) / 1000.0
             self.elements.update()

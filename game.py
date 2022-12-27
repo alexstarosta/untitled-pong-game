@@ -30,21 +30,23 @@ class Game:
         self.gamestate = gamestate
         if gamemode == "bot 1v1":
             self.leftReady = True
-            self.leftUpdateTime = random.randint(1,10)
+            self.leftUpdateTime = random.randint(5,20)
             self.leftRandomSpace = random.randint(0,40)
             self.leftTargeting = random.randint(0,20)
         else:
             self.leftReady = False
         if gamemode == "1 player" or gamemode == "bot 1v1":
             self.rightReady = True
-            self.rightUpdateTime = random.randint(1,10)
+            self.rightUpdateTime = random.randint(5,20)
             self.rightRandomSpace = random.randint(0,40)
             self.rightTargeting = random.randint(0,20)
         else:
             self.rightReady = False
-        self.gameCountdown = 5
+        self.gameCountdown = 6
         self.score = [0,0]
         self.counter = 0
+        self.lcountertime = 0
+        self.rcountertime = 0
 
     def setup(self):
 
@@ -58,7 +60,7 @@ class Game:
         self.player2 = Player(self, WIDTH - 2*WIDTH/50 + 1, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 2, self.gamemode)
         self.ball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50, LIGHTGREY)
 
-        self.wsd1nonscaled = pygame.image.load("wsd1.png")
+        self.wsd1nonscaled = pygame.image.load("assets/wsd1.png")
         self.wsd1 = pygame.transform.scale(self.wsd1nonscaled, (220,220))
         self.wsd1Rect = self.wsd1.get_rect(center = (WIDTH/2 - 200,HEIGHT/4))
 
@@ -70,15 +72,15 @@ class Game:
         self.downkeyCheck = KeybindChecker(self, "down", WIDTH/2 + WIDTH/4 - 50, HEIGHT/3 - 60, 100, 100, DARKRED)
         self.leftkeyCheck = KeybindChecker(self, "left", WIDTH/2 + WIDTH/4 - 160, HEIGHT/3 - 120, 100, 100, DARKRED)
 
-        self.udl1nonscaled = pygame.image.load("updownleft1.png")
+        self.udl1nonscaled = pygame.image.load("assets/updownleft1.png")
         self.udl1 = pygame.transform.scale(self.udl1nonscaled, (220,220))
         self.udl1Rect = self.udl1.get_rect(center = (WIDTH/2 + 200,HEIGHT/4))
 
-        gameFont5x5 = pygame.font.Font("bit5x5.ttf", 172)
+        gameFont5x5 = pygame.font.Font("assets/bit5x5.ttf", 172)
         self.startingText = gameFont5x5.render("", False, LIGHTGREY)
         self.startingTextRect = self.startingText.get_rect(center = (WIDTH/1.92 - ((WIDTH/50)/2), HEIGHT/4))
 
-        gameFont5x3 = pygame.font.Font("bit5x3.ttf", 112)
+        gameFont5x3 = pygame.font.Font("assets/bit5x3.ttf", 112)
         if self.score[0] < 10:
             self.score1 = gameFont5x3.render("0" + f"{self.score[0]}", False, LIGHTGREY)
         else:
@@ -110,30 +112,57 @@ class Game:
         self.screen.blit(self.score1, self.score1Rect)
         self.screen.blit(self.score2, self.score2Rect)
 
-        if self.leftReady:
-            self.screen.blit(changeColor(self.wsd1, BLUE), self.wsd1Rect)
-        else:
-            self.screen.blit(changeColor(self.wsd1, LIGHTGREY), self.wsd1Rect)
+        def changeColorGradient(c1, c2, count):
+            if count > 50:
+                return c2
+            rchange = (c2[0] - c1[0]) / 50
+            gchange = (c2[1] - c1[1]) / 50
+            bchange = (c2[2] - c1[2]) / 50
+            return pygame.Color((int)(round(c1[0] + rchange*count)), (int)(round(c1[1] + gchange*count)),(int)(round(c1[2] + bchange*count)))
 
-        if self.rightReady:
-            self.screen.blit(changeColor(self.udl1, RED), self.udl1Rect)
-        else:
-            self.screen.blit(changeColor(self.udl1, LIGHTGREY), self.udl1Rect)
+        if not self.gamemode == "bot 1v1":
+            if self.leftReady:
+                if self.wsd1.get_alpha != 0:
+                    if self.lcountertime == 0:
+                        self.lcountertime = self.counter
+                    self.screen.blit(changeColor(self.wsd1, changeColorGradient(LIGHTGREY, BLUE, self.counter - self.lcountertime)), self.wsd1Rect)
+            else:
+                self.screen.blit(changeColor(self.wsd1, LIGHTGREY), self.wsd1Rect)
 
+            if self.rightReady:
+                if self.udl1.get_alpha != 0:
+                    if self.rcountertime == 0:
+                        self.rcountertime = self.counter
+                    self.screen.blit(changeColor(self.udl1, changeColorGradient(LIGHTGREY, RED, self.counter - self.rcountertime)), self.udl1Rect)
+            else:
+                self.screen.blit(changeColor(self.udl1, LIGHTGREY), self.udl1Rect)
+        
         if self.particles == "on":
             self.particleSpawner.particleGroup.draw(self.screen)
         pygame.display.flip()
 
     def drawCountdown(self, text):
-        gameFont = pygame.font.Font("bit5x5.ttf", 172)
+        gameFont = pygame.font.Font("assets/bit5x5.ttf", 172)
         self.startingText = gameFont.render(f"{text}", False, LIGHTGREY)
         self.startingTextRect = self.startingText.get_rect(center = (WIDTH/1.92 - ((WIDTH/50)/2), HEIGHT/4))
 
         self.screen.blit(self.startingText, self.startingTextRect)
         pygame.display.flip() 
 
+    def hidekeybinds(self):
+        self.udl1.set_alpha(0)
+        self.wsd1.set_alpha(0)
+
+        self.wkeyCheck.hide()
+        self.skeyCheck.hide()
+        self.dkeyCheck.hide()
+
+        self.upkeyCheck.hide()
+        self.downkeyCheck.hide()
+        self.leftkeyCheck.hide()
+
     def drawScores(self):
-        gameFont5x3 = pygame.font.Font("bit5x3.ttf", 112)
+        gameFont5x3 = pygame.font.Font("assets/bit5x3.ttf", 112)
         if self.score[0] < 10:
             self.score1 = gameFont5x3.render("0" + f"{self.score[0]}", False, LIGHTGREY)
         else:
@@ -148,19 +177,8 @@ class Game:
 
         self.screen.blit(self.score1, self.score1Rect)
         self.screen.blit(self.score2, self.score2Rect)
+
         pygame.display.flip() 
-
-    def hidekeybinds(self):
-        self.udl1.set_alpha(0)
-        self.wsd1.set_alpha(0)
-
-        self.wkeyCheck.hide()
-        self.skeyCheck.hide()
-        self.dkeyCheck.hide()
-
-        self.upkeyCheck.hide()
-        self.downkeyCheck.hide()
-        self.leftkeyCheck.hide()
 
     def run(self):
         self.playing = True

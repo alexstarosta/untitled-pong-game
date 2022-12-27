@@ -170,7 +170,7 @@ class Ball(pygame.sprite.Sprite):
                     else:
                         self.game.particleSpawner.spawnParticles(BLUE, self.game.elements.sprites()[0].rect.right, self.y, "left")
                 self.side = "right"
-                self.increaseSpeed(0.2)
+                self.increaseSpeed(0.4)
                 self.bounceCount += 1
         if self.x > WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = -abs(self.xVel)
@@ -182,7 +182,7 @@ class Ball(pygame.sprite.Sprite):
                     else:
                         self.game.particleSpawner.spawnParticles(RED, self.game.elements.sprites()[1].rect.left, self.y, "right")
                 self.side = "left"
-                self.increaseSpeed(0.2)
+                self.increaseSpeed(0.4)
                 self.bounceCount += 1
 
     def calcYVel(self, player1, player2, bally, ballx, side):
@@ -325,7 +325,7 @@ class KeybindChecker(pygame.sprite.Sprite):
             self.tickspeed = self.clock.tick(FPS) / 1000.0
             if self.fadeIn:
                 self.counter += self.tickspeed * 2
-                self.alpha = 255 * self.easeOutQuad(self.counter)
+                self.alpha = 255 * self.easeOutQuad(self.counter) + 100
                 self.image.set_alpha(self.alpha)
                 if self.alpha >= 254:
                     self.fadeIn = False

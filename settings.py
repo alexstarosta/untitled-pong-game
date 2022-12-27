@@ -33,5 +33,5 @@ GAMEMODE = "1 player"
 
 # ELEMENTS options
 
-PADDLE_SPEED = 7
+PADDLE_SPEED = 8
 BALL_SPEED = 5
