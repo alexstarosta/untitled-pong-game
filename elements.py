@@ -93,12 +93,14 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = self.y
 
 class Ball(pygame.sprite.Sprite):
-    def __init__(self, game, x, y, xVel, yVel, bwidth, bheight, color):
+    def __init__(self, game, x, y, xVel, yVel, bwidth, bheight, color, type):
         self.groups = game.ballElements
         self.game = game
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.image = pygame.Surface([bwidth, bheight])
         self.image.fill(color)
+        self.color = color
+        self.type = type
         self.rect = self.image.get_rect()
         self.rect.center = (x,y)
         self.width = bwidth
@@ -129,6 +131,8 @@ class Ball(pygame.sprite.Sprite):
         self.yVel = yVel
 
     def resetBall(self):
+        self.game.fireballActive = False
+        self.image.fill(LIGHTGREY)
         self.bounceCount = 0
         self.y = self.originy
         self.x = self.originx
@@ -149,44 +153,52 @@ class Ball(pygame.sprite.Sprite):
             self.yVel *= -1
         if self.x < 0:
             self.resetBall()
-            self.game.gameState = "playing"
-            self.game.gameCountdown = 5
-            self.game.score[1] += 1
-            self.lastWinner = "right"
-            self.game.drawScores()
+            if self.type == "ball":
+                self.game.gameState = "playing"
+                self.game.gameCountdown = 5
+                self.game.score[1] += 1
+                self.lastWinner = "right"
+                self.game.drawScores()
         elif self.x > WIDTH - self.width:
             self.resetBall()
-            self.game.gameState = "playing"
-            self.game.gameCountdown = 5
-            self.game.score[0] += 1
-            self.lastWinner = "left"
-            self.game.drawScores()
+            if self.type == "ball":
+                self.game.gameState = "playing"
+                self.game.gameCountdown = 5
+                self.game.score[0] += 1
+                self.lastWinner = "left"
+                self.game.drawScores()
         if self.x < WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = abs(self.xVel)
             if self.side == "unknown" or self.side == "left":
                 self.calcYVel(self.game.elements.sprites()[0], self.game.elements.sprites()[1], self.y, self.x, "left")
-                if hasattr(self.game, 'particleSpawner'):
-                    if self.angle > 41 or self.angle < -41:
-                        self.game.particleSpawner.spawnParticles(BLUE, self.rect.x, self.y, "corner")
-                    else:
-                        self.game.particleSpawner.spawnParticles(BLUE, self.game.elements.sprites()[0].rect.right, self.y, "left")
-                self.side = "right"
+                if self.type == "ball":
+                    if hasattr(self.game, 'particleSpawner'):
+                        if self.angle > 41 or self.angle < -41:
+                            self.game.particleSpawner.spawnParticles(BLUE, self.rect.x, self.y, "corner")
+                        else:
+                            self.game.particleSpawner.spawnParticles(BLUE, self.game.elements.sprites()[0].rect.right, self.y, "left")
+                    self.side = "right"
                 self.increaseSpeed(0.4)
                 self.bounceCount += 1
         if self.x > WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = -abs(self.xVel)
             if self.side == "unknown" or self.side == "right":
                 self.calcYVel(self.game.elements.sprites()[0], self.game.elements.sprites()[1], self.y, self.x, "right")
-                if hasattr(self.game, 'particleSpawner'):
-                    if self.angle > 41 or self.angle < -41:
-                        self.game.particleSpawner.spawnParticles(RED, self.rect.x, self.y, "corner")
-                    else:
-                        self.game.particleSpawner.spawnParticles(RED, self.game.elements.sprites()[1].rect.left, self.y, "right")
-                self.side = "left"
+                if self.type == "ball":
+                    if hasattr(self.game, 'particleSpawner'):
+                        if self.angle > 41 or self.angle < -41:
+                            self.game.particleSpawner.spawnParticles(RED, self.rect.x, self.y, "corner")
+                        else:
+                            self.game.particleSpawner.spawnParticles(RED, self.game.elements.sprites()[1].rect.left, self.y, "right")
+                    self.side = "left"
                 self.increaseSpeed(0.4)
                 self.bounceCount += 1
 
     def calcYVel(self, player1, player2, bally, ballx, side):
+
+        if self.type == "fireball":
+            return
+
         if side == "left":
             refPoint = player1.rect.center
             refPointx = refPoint[0] - player1.rect.height/2
@@ -194,10 +206,18 @@ class Ball(pygame.sprite.Sprite):
 
             self.angle = ((bally + self.height/2) - refPointy) / (ballx - refPointx) * 45
 
+            self.game.fireballActive = False
+
             if self.angle > 65:
                 self.angle = 65
+                self.game.fireballActive = True
+                self.game.fireball.width = WIDTH/30
+                self.game.fireball.height = WIDTH/30
             elif self.angle < -65:
                 self.angle = -65
+                self.game.fireballActive = True
+                self.game.fireball.width = WIDTH/30
+                self.game.fireball.height = WIDTH/30
 
             self.xVel -= 0.2
 
@@ -214,10 +234,18 @@ class Ball(pygame.sprite.Sprite):
 
             self.angle = ((bally + self.height/2) - refPointy) / ((ballx + self.width) - refPointx) * 45
 
+            self.game.fireballActive = False
+
             if self.angle > 65:
                 self.angle = 65
+                self.game.fireballActive = True
+                self.game.fireball.width = WIDTH/30
+                self.game.fireball.height = WIDTH/30
             elif self.angle < -65:
                 self.angle = -65
+                self.game.fireballActive = True
+                self.game.fireball.width = WIDTH/30
+                self.game.fireball.height = WIDTH/30
 
             self.xVel -= 0.2
 
@@ -229,22 +257,36 @@ class Ball(pygame.sprite.Sprite):
 
     def update(self):
         self.checkWalls()
-        self.y += self.yVel
-        self.rect.y = self.y
-        self.x += self.xVel
-        self.rect.x = self.x
+        if self.type == "ball":
+            if self.game.fireballActive:
+                self.image.fill(FIRERED)
+                self.y += self.yVel
+                self.rect.y = self.y + random.uniform(-5,5)
+                self.x += self.xVel
+                self.rect.x = self.x + random.uniform(-5,5)
+            else:
+                self.image.fill(LIGHTGREY)
+                self.y += self.yVel
+                self.rect.y = self.y
+                self.x += self.xVel
+                self.rect.x = self.x
+        elif self.type == "fireball":
+            if self.game.fireballActive:
+                self.rect = self.image.get_rect(center = (self.game.ball.x + self.game.ball.width/2 - 1 + random.uniform(-5,5), self.game.ball.y + self.game.ball.height/2 - 1 + random.uniform(-5,5)))
+                if self.game.counter%3 == 0:
+                    self.game.particleSpawner.spawnParticles(self.color, self.game.ball.x + self.game.ball.width/2 - 1 + random.uniform(-25,25), self.game.ball.y + self.game.ball.height/2 - 1 + random.uniform(-25,25), "fire")
+
 
 class Particle(pygame.sprite.Sprite):
     def __init__(self, color, position):
         super(Particle, self).__init__()
-        if position == "title":
+        if position == "title" or position == "fire":
             self.width = random.randrange(15,19)*1.25
         else:
             self.width = random.randrange(15,19)
         self.originWidth = self.width
         self.height = self.width
-        self.size = (self.width, self.height)
-        self.image = pygame.Surface(self.size)
+        self.image = pygame.Surface((self.width, self.height))
         self.color = color
         self.image.fill(self.color)
         self.rect = self.image.get_rect()
@@ -252,7 +294,7 @@ class Particle(pygame.sprite.Sprite):
             self.xVel = random.uniform(-8, 0)
         if position == "left":
             self.xVel = random.uniform(0, 8)
-        if position == "corner" or position == "title":
+        if position == "corner" or position == "title" or position == "fire":
             self.xVel = random.uniform(-8, 8)
         if position == "title":
             self.yVel = random.uniform(0, 8)
@@ -275,8 +317,7 @@ class Particle(pygame.sprite.Sprite):
                 self.killTimer -= 1
             self.width = math.ceil((self.killTimer/self.startTimer) * self.originWidth)
             self.height = self.width
-            self.size = (self.width, self.height)
-            self.image = pygame.Surface(self.size)
+            self.image = pygame.Surface((self.width, self.height))
             self.image.fill(self.color)
             self.updateCount += 1
         else:

@@ -33,6 +33,7 @@ class Game:
             self.leftUpdateTime = random.randint(2,12)
             self.leftRandomSpace = random.randint(0,10)
             self.leftTargeting = random.randint(0,20)
+            self.leftCloseTargeting = random.randint(50,150)
         else:
             self.leftReady = False
         if gamemode == "1 player" or gamemode == "bot 1v1":
@@ -40,6 +41,7 @@ class Game:
             self.rightUpdateTime = random.randint(2,12)
             self.rightRandomSpace = random.randint(0,10)
             self.rightTargeting = random.randint(20,50)
+            self.rightCloseTargeting = random.randint(50,150)
         else:
             self.rightReady = False
         self.gameCountdown = 6
@@ -47,6 +49,10 @@ class Game:
         self.counter = 0
         self.lcountertime = 0
         self.rcountertime = 0
+        self.firecounter = 0
+        self.firechange = 0
+        self.fireSizeToggle = True
+        self.fireballActive = False
 
     def setup(self):
 
@@ -58,7 +64,11 @@ class Game:
 
         self.player1 = Player(self, WIDTH/50, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 1, self.gamemode)
         self.player2 = Player(self, WIDTH - 2*WIDTH/50 + 1, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 2, self.gamemode)
-        self.ball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50, LIGHTGREY)
+
+
+        self.fireball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, 0, 0, FIREORANGE, "fireball")
+
+        self.ball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50, LIGHTGREY, "ball")
 
         self.wsd1nonscaled = pygame.image.load("assets/wsd1.png")
         self.wsd1 = pygame.transform.scale(self.wsd1nonscaled, (220,220))
@@ -112,20 +122,61 @@ class Game:
         self.screen.blit(self.score1, self.score1Rect)
         self.screen.blit(self.score2, self.score2Rect)
 
-        def changeColorGradient(c1, c2, count):
+        def changeColorGradient(c1, c2, count, type):
             if count > 50:
+                if type == "fire":
+                    self.firecounter = 0
+                    if self.firechange == 0:
+                        self.firechange = 1
+                    elif self.firechange == 1:
+                        self.firechange = 2
+                    elif self.firechange == 2:
+                        self.firechange = 0
                 return c2
             rchange = (c2[0] - c1[0]) / 50
             gchange = (c2[1] - c1[1]) / 50
             bchange = (c2[2] - c1[2]) / 50
             return pygame.Color((int)(round(c1[0] + rchange*count)), (int)(round(c1[1] + gchange*count)),(int)(round(c1[2] + bchange*count)))
 
+        if self.fireballActive:
+            if self.fireSizeToggle:
+                self.fireball.width += 1
+                self.fireball.height += 1
+                if self.fireball.width > WIDTH/30 + 5:
+                    self.fireSizeToggle = not self.fireSizeToggle
+            else:
+                self.fireball.width -= 1
+                self.fireball.height -= 1
+                if self.fireball.width < WIDTH/30 - 5:
+                    self.fireSizeToggle = not self.fireSizeToggle
+            self.fireball.image = pygame.Surface([self.fireball.width, self.fireball.height])
+            self.fireball.rect = self.fireball.image.get_rect(center = (self.ball.x + self.ball.width/2 - 1 + random.uniform(-5,5), self.ball.y + self.ball.height/2 - 1 + random.uniform(-5,5)))
+        else:
+            self.fireball.image = pygame.Surface([0, 0])
+            self.fireball.rect = self.fireball.image.get_rect(center = (self.ball.x + self.ball.width/2 - 1 + random.uniform(-5,5), self.ball.y + self.ball.height/2 - 1 + random.uniform(-5,5)))
+
+        if self.firechange == 0:
+            if self.firecounter == 0:
+                self.firecounter = self.counter
+            self.fireball.image.fill(changeColorGradient(FIREORANGE, FIRERED, self.counter - self.firecounter, "fire"))
+            self.fireball.color = changeColorGradient(FIREORANGE, FIRERED, self.counter - self.firecounter, "fire")
+        elif self.firechange == 1:
+            if self.firecounter == 0:
+                self.firecounter = self.counter
+            self.fireball.image.fill(changeColorGradient(FIRERED, FIREYELLOW, self.counter - self.firecounter, "fire"))
+            self.fireball.color = changeColorGradient(FIRERED, FIREYELLOW, self.counter - self.firecounter, "fire")
+        elif self.firechange == 2:
+            if self.firecounter == 0:
+                self.firecounter = self.counter
+            self.fireball.image.fill(changeColorGradient(FIREYELLOW, FIREORANGE, self.counter - self.firecounter, "fire"))
+            self.fireball.color = changeColorGradient(FIREYELLOW, FIREORANGE, self.counter - self.firecounter, "fire")
+
         if not self.gamemode == "bot 1v1":
             if self.leftReady:
                 if self.wsd1.get_alpha != 0:
                     if self.lcountertime == 0:
                         self.lcountertime = self.counter
-                    self.screen.blit(changeColor(self.wsd1, changeColorGradient(LIGHTGREY, BLUE, self.counter - self.lcountertime)), self.wsd1Rect)
+                    self.screen.blit(changeColor(self.wsd1, changeColorGradient(LIGHTGREY, BLUE, self.counter - self.lcountertime, "key")), self.wsd1Rect)
             else:
                 self.screen.blit(changeColor(self.wsd1, LIGHTGREY), self.wsd1Rect)
 
@@ -133,7 +184,7 @@ class Game:
                 if self.udl1.get_alpha != 0:
                     if self.rcountertime == 0:
                         self.rcountertime = self.counter
-                    self.screen.blit(changeColor(self.udl1, changeColorGradient(LIGHTGREY, RED, self.counter - self.rcountertime)), self.udl1Rect)
+                    self.screen.blit(changeColor(self.udl1, changeColorGradient(LIGHTGREY, RED, self.counter - self.rcountertime, "key")), self.udl1Rect)
             else:
                 self.screen.blit(changeColor(self.udl1, LIGHTGREY), self.udl1Rect)
         
@@ -196,20 +247,20 @@ class Game:
 
             if self.gamemode == "bot 1v1":
                 if self.counter%self.leftUpdateTime == 0:
-                    if self.ball.y + self.leftTargeting == self.player1.y or self.ball.y - self.leftTargeting == self.player1.y:
+                    if self.ball.y >= self.player1.y + self.player1.height/2 - self.leftTargeting and self.ball.y <= self.player1.y + self.player1.height/2 + self.leftTargeting and abs(self.ball.x - self.player1.x) < self.leftCloseTargeting:
                             self.player1.up = False
                             self.player1.down = False
-                            break
-                    if self.ball.y + random.uniform(-1*self.leftRandomSpace,self.leftRandomSpace) < self.player1.y + self.player1.height/2 + random.uniform(-self.leftRandomSpace,self.leftRandomSpace):
-                        self.player1.up = True
-                        self.player1.down = False
                     else:
-                        self.player1.up = False
-                        self.player1.down = True
+                        if self.ball.y + random.uniform(-1*self.leftRandomSpace,self.leftRandomSpace) < self.player1.y + self.player1.height/2 + random.uniform(-self.leftRandomSpace,self.leftRandomSpace):
+                            self.player1.up = True
+                            self.player1.down = False
+                        else:
+                            self.player1.up = False
+                            self.player1.down = True
 
             if self.gamemode == "1 player" or self.gamemode == "bot 1v1":
                 if self.counter%self.rightUpdateTime == 0:
-                    if self.ball.y >= self.player2.y + self.player2.height/2 - self.rightTargeting and self.ball.y <= self.player2.y + self.player2.height/2 + self.rightTargeting and abs(self.ball.x - self.player2.x) < 100:
+                    if self.ball.y >= self.player2.y + self.player2.height/2 - self.rightTargeting and self.ball.y <= self.player2.y + self.player2.height/2 + self.rightTargeting and abs(self.ball.x - self.player2.x) < self.rightCloseTargeting:
                             self.player2.up = False
                             self.player2.down = False
                     else:
@@ -244,6 +295,7 @@ class Game:
                     elif math.ceil(self.gameCountdown) == 0 and self.gameState == "playing":
                         self.drawCountdown("GO!")
                         self.ball.startGame()
+                        self.fireball.startGame()
                         self.gameState = "active"
                     elif math.ceil(self.gameCountdown) == -1:
                         self.drawCountdown("")
