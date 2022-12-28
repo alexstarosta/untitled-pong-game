@@ -8,6 +8,6 @@ from settings import *
 from elements import *
 from menu import *
 
-menu = Menu(SFX, PARTICLES, GAMEMODE)
+menu = Menu(SFX, PARTICLES, GAMEMODE, "fast")
 menu.setup()
 menu.run()

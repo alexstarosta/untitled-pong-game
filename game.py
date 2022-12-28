@@ -11,13 +11,21 @@ from settings import *
 from elements import *
 from menu import *
 
+def changeColor(image, color):
+    colouredImage = pygame.Surface(image.get_size())
+    colouredImage.fill(color)
+        
+    finalImage = image.copy()
+    finalImage.blit(colouredImage, (0, 0), special_flags = pygame.BLEND_MULT)
+    return finalImage
+
 def backToMenu():
     from menu import Menu
     import settings
-    menu = Menu(settings.SFX, settings.PARTICLES, settings.GAMEMODE)
+    menu = Menu(settings.SFX, settings.PARTICLES, settings.GAMEMODE, "fast")
     menu.setup()
     menu.run()
-
+    
 class Game:
     def __init__(self, gamestate, gamemode, sfx, particle):
         pygame.font.init()
@@ -53,6 +61,7 @@ class Game:
         self.firechange = 0
         self.fireSizeToggle = True
         self.fireballActive = False
+        self.coverAlpha = 0
 
     def setup(self):
 
@@ -65,10 +74,9 @@ class Game:
         self.player1 = Player(self, WIDTH/50, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 1, self.gamemode)
         self.player2 = Player(self, WIDTH - 2*WIDTH/50 + 1, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 2, self.gamemode)
 
-
         self.fireball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, 0, 0, FIREORANGE, "fireball")
 
-        self.ball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50, LIGHTGREY, "ball")
+        self.ball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, -1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50, LIGHTGREY, "ball")
 
         self.wsd1nonscaled = pygame.image.load("assets/wsd1.png")
         self.wsd1 = pygame.transform.scale(self.wsd1nonscaled, (220,220))
@@ -107,20 +115,14 @@ class Game:
 
     def draw(self):
 
-        def changeColor(image, color):
-            colouredImage = pygame.Surface(image.get_size())
-            colouredImage.fill(color)
-        
-            finalImage = image.copy()
-            finalImage.blit(colouredImage, (0, 0), special_flags = pygame.BLEND_MULT)
-            return finalImage
-
         self.screen.fill(DARKGREY)
         self.elements.draw(self.screen)
         self.ballElements.draw(self.screen)
         self.screen.blit(self.startingText, self.startingTextRect)
         self.screen.blit(self.score1, self.score1Rect)
         self.screen.blit(self.score2, self.score2Rect)
+        if self.coverAlpha != 0:
+            self.screen.blit(self.cover, self.coverRect)
 
         def changeColorGradient(c1, c2, count, type):
             if count > 50:
@@ -231,6 +233,20 @@ class Game:
 
         pygame.display.flip() 
 
+    def endSequence(self):
+
+        gameFont5x5 = pygame.font.Font("assets/bit5x5.ttf", 56)
+
+        self.cover = pygame.Surface([WIDTH, HEIGHT])
+        self.cover.fill(DARKGREY)
+        self.coverRect = self.cover.get_rect(center = (WIDTH/2, HEIGHT/2))
+        
+        if self.coverAlpha < 175:
+            self.coverAlpha += 1
+            self.cover.set_alpha(self.coverAlpha)
+        else:
+            self.cover.set_alpha(175)
+
     def run(self):
         self.playing = True
         self.gameState = "playing"
@@ -240,9 +256,9 @@ class Game:
             self.ballElements.update()
             self.draw()
 
-            if self.score[0] == 5 or self.score[1] == 5:
-                backToMenu()
-
+            if self.score[0] == 1 or self.score[1] == 1:
+                self.endSequence()
+            
             self.counter += 1
 
             if self.gamemode == "bot 1v1":
@@ -281,7 +297,9 @@ class Game:
                 self.particleSpawner.update()
 
             if self.leftReady and self.rightReady:
-                self.gameCountdown -= self.tickspeed
+                
+                if self.coverAlpha == 0:
+                    self.gameCountdown -= self.tickspeed
     
                 if self.gameCountdown >= -4:
                     if math.ceil(self.gameCountdown) == 4:

@@ -132,7 +132,6 @@ class Ball(pygame.sprite.Sprite):
 
     def resetBall(self):
         self.game.fireballActive = False
-        self.image.fill(LIGHTGREY)
         self.bounceCount = 0
         self.y = self.originy
         self.x = self.originx
