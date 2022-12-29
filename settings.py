@@ -34,6 +34,7 @@ GAMEACTIVE = False
 SFX = "on"
 PARTICLES = "on"
 GAMEMODE = "1 player"
+EGG = False
 
 # ELEMENTS options
 

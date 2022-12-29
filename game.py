@@ -22,6 +22,7 @@ def changeColor(image, color):
 def backToMenu():
     from menu import Menu
     import settings
+    settings.EGG = False
     menu = Menu(settings.SFX, settings.PARTICLES, settings.GAMEMODE, "fast")
     menu.setup()
     menu.run()
@@ -62,6 +63,7 @@ class Game:
         self.fireSizeToggle = True
         self.fireballActive = False
         self.coverAlpha = 0
+        self.randomfactor = random.uniform(-20,20)
 
     def setup(self):
 
@@ -78,21 +80,23 @@ class Game:
 
         self.ball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, -1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50, LIGHTGREY, "ball")
 
-        self.wsd1nonscaled = pygame.image.load("assets/wsd1.png")
-        self.wsd1 = pygame.transform.scale(self.wsd1nonscaled, (220,220))
-        self.wsd1Rect = self.wsd1.get_rect(center = (WIDTH/2 - 200,HEIGHT/4))
+        if not self.leftReady:
+            self.wkeyCheck = KeybindChecker(self, "w", WIDTH/4 - 50, HEIGHT/3 - 170, 100, 100, DARKBLUE)
+            self.skeyCheck = KeybindChecker(self, "s", WIDTH/4 - 50, HEIGHT/3 - 60, 100, 100, DARKBLUE)
+            self.dkeyCheck = KeybindChecker(self, "d", WIDTH/4 + 60, HEIGHT/3 - 120, 100, 100, DARKBLUE)
 
-        self.wkeyCheck = KeybindChecker(self, "w", WIDTH/4 - 50, HEIGHT/3 - 170, 100, 100, DARKBLUE)
-        self.skeyCheck = KeybindChecker(self, "s", WIDTH/4 - 50, HEIGHT/3 - 60, 100, 100, DARKBLUE)
-        self.dkeyCheck = KeybindChecker(self, "d", WIDTH/4 + 60, HEIGHT/3 - 120, 100, 100, DARKBLUE)
+            self.wsd1nonscaled = pygame.image.load("assets/wsd1.png")
+            self.wsd1 = pygame.transform.scale(self.wsd1nonscaled, (220,220))
+            self.wsd1Rect = self.wsd1.get_rect(center = (WIDTH/2 - 200,HEIGHT/4))
 
-        self.upkeyCheck = KeybindChecker(self, "up", WIDTH/2 + WIDTH/4 - 50, HEIGHT/3 - 170, 100, 100, DARKRED)
-        self.downkeyCheck = KeybindChecker(self, "down", WIDTH/2 + WIDTH/4 - 50, HEIGHT/3 - 60, 100, 100, DARKRED)
-        self.leftkeyCheck = KeybindChecker(self, "left", WIDTH/2 + WIDTH/4 - 160, HEIGHT/3 - 120, 100, 100, DARKRED)
+        if not self.rightReady:
+            self.upkeyCheck = KeybindChecker(self, "up", WIDTH/2 + WIDTH/4 - 50, HEIGHT/3 - 170, 100, 100, DARKRED)
+            self.downkeyCheck = KeybindChecker(self, "down", WIDTH/2 + WIDTH/4 - 50, HEIGHT/3 - 60, 100, 100, DARKRED)
+            self.leftkeyCheck = KeybindChecker(self, "left", WIDTH/2 + WIDTH/4 - 160, HEIGHT/3 - 120, 100, 100, DARKRED)
 
-        self.udl1nonscaled = pygame.image.load("assets/updownleft1.png")
-        self.udl1 = pygame.transform.scale(self.udl1nonscaled, (220,220))
-        self.udl1Rect = self.udl1.get_rect(center = (WIDTH/2 + 200,HEIGHT/4))
+            self.udl1nonscaled = pygame.image.load("assets/updownleft1.png")
+            self.udl1 = pygame.transform.scale(self.udl1nonscaled, (220,220))
+            self.udl1Rect = self.udl1.get_rect(center = (WIDTH/2 + 200,HEIGHT/4))
 
         gameFont5x5 = pygame.font.Font("assets/bit5x5.ttf", 172)
         self.startingText = gameFont5x5.render("", False, LIGHTGREY)
@@ -114,15 +118,37 @@ class Game:
         self.draw()
 
     def draw(self):
+        import settings
+        if settings.EGG:
+            self.alpha = 0
+            self.screen.fill(WHITE)
+            cellSize = round(WIDTH/40)
+            count = 0
 
-        self.screen.fill(DARKGREY)
+            if self.fireballActive:
+                tilecolor = (255,208,199)
+                speed = 5
+            else:
+                tilecolor = (230,230,230)
+                speed = 1
+            for x in range(round(WIDTH/20)):
+                for y in range(round(WIDTH/20)):
+                    if count%2 == 0:
+                        pygame.draw.rect(self.screen, tilecolor, (x*cellSize + self.counter*speed/2%round(WIDTH/40) + self.randomfactor - 100, y*cellSize + self.counter*speed/2%round(WIDTH/40) - 100, cellSize, cellSize))
+                    count += 1
+        else:
+            self.screen.fill(DARKGREY)
         self.elements.draw(self.screen)
         self.ballElements.draw(self.screen)
         self.screen.blit(self.startingText, self.startingTextRect)
         self.screen.blit(self.score1, self.score1Rect)
         self.screen.blit(self.score2, self.score2Rect)
+
         if self.coverAlpha != 0:
             self.screen.blit(self.cover, self.coverRect)
+            self.screen.blit(self.gameover, self.gameoverRect)
+            self.screen.blit(self.playagain, self.playagainRect)
+            self.screen.blit(self.returntomenu, self.returntomenuRect)
 
         def changeColorGradient(c1, c2, count, type):
             if count > 50:
@@ -173,7 +199,7 @@ class Game:
             self.fireball.image.fill(changeColorGradient(FIREYELLOW, FIREORANGE, self.counter - self.firecounter, "fire"))
             self.fireball.color = changeColorGradient(FIREYELLOW, FIREORANGE, self.counter - self.firecounter, "fire")
 
-        if not self.gamemode == "bot 1v1":
+        if self.gamemode == "2 player" or self.gamemode == "1 player":
             if self.leftReady:
                 if self.wsd1.get_alpha != 0:
                     if self.lcountertime == 0:
@@ -182,6 +208,7 @@ class Game:
             else:
                 self.screen.blit(changeColor(self.wsd1, LIGHTGREY), self.wsd1Rect)
 
+        if self.gamemode == "2 player":
             if self.rightReady:
                 if self.udl1.get_alpha != 0:
                     if self.rcountertime == 0:
@@ -203,16 +230,17 @@ class Game:
         pygame.display.flip() 
 
     def hidekeybinds(self):
-        self.udl1.set_alpha(0)
-        self.wsd1.set_alpha(0)
+        if self.gamemode == "2 player":
+            self.udl1.set_alpha(0)
+            self.upkeyCheck.hide()
+            self.downkeyCheck.hide()
+            self.leftkeyCheck.hide()
 
-        self.wkeyCheck.hide()
-        self.skeyCheck.hide()
-        self.dkeyCheck.hide()
-
-        self.upkeyCheck.hide()
-        self.downkeyCheck.hide()
-        self.leftkeyCheck.hide()
+        if self.gamemode == "2 player" or self.gamemode == "1 player":
+            self.wsd1.set_alpha(0)
+            self.wkeyCheck.hide()
+            self.skeyCheck.hide()
+            self.dkeyCheck.hide()
 
     def drawScores(self):
         gameFont5x3 = pygame.font.Font("assets/bit5x3.ttf", 112)
@@ -235,17 +263,59 @@ class Game:
 
     def endSequence(self):
 
-        gameFont5x5 = pygame.font.Font("assets/bit5x5.ttf", 56)
+        gameFont5x5 = pygame.font.Font("assets/bit5x5.ttf", 100)
+        gameFont5x5small = pygame.font.Font("assets/bit5x5.ttf", 30)
 
         self.cover = pygame.Surface([WIDTH, HEIGHT])
         self.cover.fill(DARKGREY)
         self.coverRect = self.cover.get_rect(center = (WIDTH/2, HEIGHT/2))
         
-        if self.coverAlpha < 175:
+        import settings
+        if settings.EGG:
+            self.gameover = gameFont5x5.render("Game Over", False, WHITE)
+            self.playagain = gameFont5x5small.render("Play Again", False, WHITE)
+            self.returntomenu = gameFont5x5small.render("Return to Menu", False, WHITE)
+        else:
+            self.gameover = gameFont5x5.render("Game Over", False, LIGHTGREY)
+            self.playagain = gameFont5x5small.render("Play Again", False, LIGHTGREY)
+            self.returntomenu = gameFont5x5small.render("Return to Menu", False, LIGHTGREY)
+
+        self.gameoverRect = self.gameover.get_rect(center = (WIDTH/2, HEIGHT/2.5))
+        self.playagainRect = self.playagain.get_rect(midright = (WIDTH/2 - 70, HEIGHT/1.75))
+        self.returntomenuRect = self.returntomenu.get_rect(midleft = (WIDTH/2 - 10, HEIGHT/1.75))
+
+        mousePos = pygame.mouse.get_pos()
+
+        if settings.EGG:
+            if self.playagainRect.collidepoint(mousePos):
+                self.playagain = gameFont5x5small.render("Play Again", False, LIGHTLIGHTGREY)
+            else:
+                self.playagain = gameFont5x5small.render("Play Again", False, WHITE)
+            
+            if self.returntomenuRect.collidepoint(mousePos):
+                self.returntomenu = gameFont5x5small.render("Return to Menu", False, LIGHTLIGHTGREY)
+            else:
+                self.returntomenu = gameFont5x5small.render("Return to Menu", False, WHITE)
+        else:
+            if self.playagainRect.collidepoint(mousePos):
+                self.playagain = gameFont5x5small.render("Play Again", False, LIGHTLIGHTGREY)
+            else:
+                self.playagain = gameFont5x5small.render("Play Again", False, LIGHTGREY)
+            
+            if self.returntomenuRect.collidepoint(mousePos):
+                self.returntomenu = gameFont5x5small.render("Return to Menu", False, LIGHTLIGHTGREY)
+            else:
+                self.returntomenu = gameFont5x5small.render("Return to Menu", False, LIGHTGREY)
+
+        if self.coverAlpha < 215:
             self.coverAlpha += 1
             self.cover.set_alpha(self.coverAlpha)
+            self.gameover.set_alpha(self.coverAlpha*(255/215 - 0.01))
+            self.playagain.set_alpha(self.coverAlpha*(255/215 - 0.01))
+            self.returntomenu.set_alpha(self.coverAlpha*(255/215 - 0.01))
         else:
-            self.cover.set_alpha(175)
+            self.cover.set_alpha(215)
+            self.gameover.set_alpha(215*(255/215 - 0.01))
 
     def run(self):
         self.playing = True
@@ -256,7 +326,7 @@ class Game:
             self.ballElements.update()
             self.draw()
 
-            if self.score[0] == 1 or self.score[1] == 1:
+            if self.score[0] == 5 or self.score[1] == 5:
                 self.endSequence()
             
             self.counter += 1
@@ -287,11 +357,13 @@ class Game:
                             self.player2.up = False
                             self.player2.down = True
 
-            if self.wkeyCheck.clicked and self.skeyCheck.clicked and self.dkeyCheck.clicked:
-                self.leftReady = True
+            if self.leftReady != True:
+                if self.wkeyCheck.clicked and self.skeyCheck.clicked and self.dkeyCheck.clicked:
+                    self.leftReady = True
 
-            if self.upkeyCheck.clicked and self.downkeyCheck.clicked and self.leftkeyCheck.clicked:
-                self.rightReady = True
+            if self.rightReady != True:
+                if self.upkeyCheck.clicked and self.downkeyCheck.clicked and self.leftkeyCheck.clicked:
+                    self.rightReady = True
 
             if self.particles == "on":
                 self.particleSpawner.update()
@@ -324,6 +396,32 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.quit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mousePos = pygame.mouse.get_pos()
+                    if self.playagainRect.collidepoint(mousePos):
+                        self.score[0] = 0 
+                        self.score[1] = 0
+                        self.drawScores()
+
+                        if self.gamemode == "bot 1v1":
+                            self.leftUpdateTime = random.randint(2,12)
+                            self.leftRandomSpace = random.randint(0,10)
+                            self.leftTargeting = random.randint(0,20)
+                            self.leftCloseTargeting = random.randint(50,150)
+
+                        if self.gamemode == "1 player" or self.gamemode == "bot 1v1":
+                            self.rightUpdateTime = random.randint(2,12)
+                            self.rightRandomSpace = random.randint(0,10)
+                            self.rightTargeting = random.randint(20,50)
+                            self.rightCloseTargeting = random.randint(50,150)
+
+                        self.cover.set_alpha(0)
+                        self.gameover.set_alpha(0)
+                        self.playagain.set_alpha(0)
+                        self.returntomenu.set_alpha(0)
+                        self.coverAlpha = 0
+                    if self.returntomenuRect.collidepoint(mousePos):
+                        backToMenu()
     
     def quit(self):
         pygame.quit()

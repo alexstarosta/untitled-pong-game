@@ -36,9 +36,11 @@ class Menu:
         self.particleSetting = particle
         self.gamemode = gamemode
         self.speed = speed
+        self.alpha = 255
         self.oclick = 0
         self.ofall = False
         self.ofallspeed = 0
+        self.randomfactor = random.uniform(-20,20)
 
     def setup(self):
         self.elements = pygame.sprite.Group()
@@ -50,7 +52,7 @@ class Menu:
 
         self.widthAdj = 50
         self.heightAdj = -175
-        self.heightAnimationPong = 350
+        self.heightAnimationPong = 300
         self.heightAnimationGame = 350
         self.sideAnimationUntitled = 480
 
@@ -90,7 +92,19 @@ class Menu:
         self.draw()
 
     def draw(self):
-        self.screen.fill(DARKGREY)
+        import settings
+        if settings.EGG:
+            self.alpha = 0
+            self.screen.fill(WHITE)
+            cellSize = round(WIDTH/40)
+            count = 0
+            for x in range(round(WIDTH/20)):
+                for y in range(round(WIDTH/20)):
+                    if count%2 == 0:
+                        pygame.draw.rect(self.screen, (230,230,230), (x*cellSize + self.counter*20%round(WIDTH/40) + self.randomfactor - 100, y*cellSize + self.counter*20%round(WIDTH/40) - 100, cellSize, cellSize))
+                    count += 1
+        else:
+            self.screen.fill(DARKGREY)
         self.elements.draw(self.screen)
 
         self.screen.blit(self.textUntitled, self.textUntitledRect)
@@ -209,7 +223,7 @@ class Menu:
 
         gameFont5x5small = pygame.font.Font("assets/bit5x5.ttf", 32)
         while self.menuOpen:
-            self.tickspeed = self.clock.tick(FPS) / 1000.0
+            self.tickspeed = self.clock.tick(FPS) / 1000
             self.elements.update()
 
             if self.speed == "fast":
@@ -217,48 +231,54 @@ class Menu:
                 self.heightAnimationGame = 0
                 self.sideAnimationUntitled = 0
 
-            self.counter += self.tickspeed
+            self.counter += self.tickspeed*2
 
-            if self.speed != "fast":
-                if self.counter > 2.5:
-                    self.alpha = 255 / (self.counter - 2.5)
-                    self.cover.set_alpha(self.alpha)
+            if self.alpha != 0:
+                if self.speed != "fast":
+                    if self.counter > 2.5:
+                        self.alpha = 255 / (self.counter - 2.5)
+                        self.cover.set_alpha(self.alpha)
+                else:
+                    if self.counter > 0.5:
+                        self.alpha = 255 / (self.counter - 0.5)
+                        self.cover.set_alpha(self.alpha)
             else:
-                if self.counter > 0.5:
-                    self.alpha = 255 / (self.counter - 0.5)
-                    self.cover.set_alpha(self.alpha)
+                self.cover.set_alpha(self.alpha)
 
             if self.speed != "fast":
                 if self.counter > 2.1:
-                    if self.heightAnimationGame >= 0:
+                    if self.heightAnimationGame > 0:
                         self.heightAnimationGame -= 50
                         self.textGameRect = self.textGame.get_rect(center = (WIDTH/2 + 2 + self.widthAdj, HEIGHT/2 + 65 + self.heightAdj - self.heightAnimationGame))
                         if self.heightAnimationGame == 0:
-                            for i in range(15):
+                            for i in range(25):
                                 self.particleSpawner.spawnParticles(LIGHTGREY, WIDTH/2 + 2 + self.widthAdj + random.uniform(-150, 150), HEIGHT/2 + 65 + self.heightAdj - self.heightAnimationGame + 30, "title")
                 if self.counter > 1.7:
-                    if self.heightAnimationPong >= 0:
+                    if self.heightAnimationPong > 0:
                         self.heightAnimationPong -= 50
                         self.textPongRect = self.textPong.get_rect(center = (WIDTH/2 - 90 + self.widthAdj, HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong))
                         self.textoRect = self.texto.get_rect(center = (WIDTH/2 - 138 + self.widthAdj, HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong))
                         if self.heightAnimationPong == 0:
-                            for i in range(15):
+                            for i in range(25):
                                 self.particleSpawner.spawnParticles(LIGHTGREY, WIDTH/2 - 90 + self.widthAdj + random.uniform(-150, 150), HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong + 20, "title") 
                 if self.counter > 0.6:
-                    if self.sideAnimationUntitled >= 0:
+                    if self.sideAnimationUntitled > 0:
                         self.sideAnimationUntitled -= 20
                         self.textUntitledRect = self.textUntitled.get_rect(center = (WIDTH/2 - 180 + self.widthAdj - self.sideAnimationUntitled, HEIGHT/2 - 100 + self.heightAdj))
             else:
-                self.textGameRect = self.textGame.get_rect(center = (WIDTH/2 + 2 + self.widthAdj, HEIGHT/2 + 65 + self.heightAdj - self.heightAnimationGame))
-                self.textPongRect = self.textPong.get_rect(center = (WIDTH/2 - 90 + self.widthAdj, HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong))
-                self.textoRect = self.texto.get_rect(center = (WIDTH/2 - 138 + self.widthAdj, HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong))
-                self.textUntitledRect = self.textUntitled.get_rect(center = (WIDTH/2 - 180 + self.widthAdj - self.sideAnimationUntitled, HEIGHT/2 - 100 + self.heightAdj))
+                if self.counter < 0.1:
+                    self.textGameRect = self.textGame.get_rect(center = (WIDTH/2 + 2 + self.widthAdj, HEIGHT/2 + 65 + self.heightAdj - self.heightAnimationGame))
+                    self.textPongRect = self.textPong.get_rect(center = (WIDTH/2 - 90 + self.widthAdj, HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong))
+                    self.textoRect = self.texto.get_rect(center = (WIDTH/2 - 138 + self.widthAdj, HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong))
+                    self.textUntitledRect = self.textUntitled.get_rect(center = (WIDTH/2 - 180 + self.widthAdj - self.sideAnimationUntitled, HEIGHT/2 - 100 + self.heightAdj))
 
             if self.ofall:
                 self.ofallspeed += 0.5
                 self.textoRect.y += self.ofallspeed
                 if self.textoRect.y > 1000:
                     self.ofall = False
+                    import settings
+                    settings.EGG = True
 
             if self.counter > 3 or self.speed == "fast" and self.counter > 1.5:
                 mousePos = pygame.mouse.get_pos()
@@ -350,11 +370,11 @@ class Menu:
 
                         if self.textoRect.collidepoint(mousePos):
                             self.oclick += 1
-                            self.particleSpawner.spawnParticles(LIGHTGREY, mousePos[0], mousePos[1], "corner")
+                            self.particleSpawner.spawnParticles(LIGHTGREY, mousePos[0], mousePos[1], "fire")
                             if self.oclick > 2:
                                 self.ofall = True
                             else:
-                                self.textoRect.y += 2
+                                self.textoRect.y += 5
 
                         if self.optionsOpen:
                             if self.sfxButtonActionRect.collidepoint(mousePos):
