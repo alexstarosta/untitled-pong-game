@@ -53,7 +53,7 @@ class Game:
             self.rightCloseTargeting = random.randint(50,150)
         else:
             self.rightReady = False
-        self.gameCountdown = 6
+        self.gameCountdown = 9
         self.score = [0,0]
         self.counter = 0
         self.lcountertime = 0
@@ -62,6 +62,11 @@ class Game:
         self.firechange = 0
         self.fireSizeToggle = True
         self.fireballActive = False
+        self.randomSide = False
+        self.arrowInit = False
+        self.lastTimeCheck = 0
+        self.initialSide = random.randint(0,1)
+
         self.coverAlpha = 0
         self.randomfactor = random.uniform(-20,20)
 
@@ -149,6 +154,9 @@ class Game:
             self.screen.blit(self.gameover, self.gameoverRect)
             self.screen.blit(self.playagain, self.playagainRect)
             self.screen.blit(self.returntomenu, self.returntomenuRect)
+
+        if self.randomSide == False and self.arrowInit:
+            self.screen.blit(self.arrow, self.arrowRect)
 
         def changeColorGradient(c1, c2, count, type):
             if count > 50:
@@ -262,7 +270,6 @@ class Game:
         pygame.display.flip() 
 
     def endSequence(self):
-
         gameFont5x5 = pygame.font.Font("assets/bit5x5.ttf", 100)
         gameFont5x5small = pygame.font.Font("assets/bit5x5.ttf", 30)
 
@@ -317,6 +324,29 @@ class Game:
             self.cover.set_alpha(215)
             self.gameover.set_alpha(215*(255/215 - 0.01))
 
+    def randomStart(self, change):
+        gameFont5x5small = pygame.font.Font("assets/bit5x5.ttf", 30)
+        if self.score[0] == 0 and self.score[1] == 0:
+            self.arrowInit = True
+
+            if change:
+                if self.initialSide == 1:
+                    self.initialSide = 0
+                else:
+                    self.initialSide = 1
+
+            if self.initialSide == 1:
+                self.arrow = gameFont5x5small.render("-}", False, LIGHTGREY)
+            else:
+                self.arrow = gameFont5x5small.render("{-", False, LIGHTGREY)
+            self.arrowRect = self.arrow.get_rect(center = (WIDTH/2, HEIGHT/2.5))
+        else:
+            if self.ball.lastWinner == "right":
+                self.arrow = gameFont5x5small.render("{-", False, LIGHTGREY)
+            else:
+                self.arrow = gameFont5x5small.render("-}", False, LIGHTGREY)
+            self.arrowRect = self.arrow.get_rect(center = (WIDTH/2, HEIGHT/2.5))
+
     def run(self):
         self.playing = True
         self.gameState = "playing"
@@ -328,7 +358,7 @@ class Game:
 
             if self.score[0] == 5 or self.score[1] == 5:
                 self.endSequence()
-            
+
             self.counter += 1
 
             if self.gamemode == "bot 1v1":
@@ -370,14 +400,40 @@ class Game:
 
             if self.leftReady and self.rightReady:
                 
+                if math.ceil(self.gameCountdown) <= 8:
+                    self.hidekeybinds()
+
                 if self.coverAlpha == 0:
                     self.gameCountdown -= self.tickspeed
-    
+
+                def sideSequence():
+
+                    if round(self.gameCountdown,1) == self.lastTimeCheck:
+                        return
+
+                    for i in range(11):
+                        if round(self.gameCountdown,1) == (round (7 - (-math.sqrt(-i+10)+3.162),1)):
+                            self.randomStart(True)
+                            return
+
+                    self.randomStart(False)
+                
+                if self.randomSide == False and math.ceil(self.gameCountdown) <= 7 and math.ceil(self.gameCountdown) > 3.5:
+                    if self.score[0] == 0 and self.score[1] == 0:
+                        sideSequence()
+                        self.lastTimeCheck = round(self.gameCountdown,1)
+
                 if self.gameCountdown >= -4:
-                    if math.ceil(self.gameCountdown) == 4:
-                        self.hidekeybinds()
                     if math.ceil(self.gameCountdown) == 3:
                         self.drawCountdown(3)
+                        if self.score[0] == 0 and self.score[1] == 0:
+                            if self.initialSide == 0:
+                                self.ball.lastWinner = "right"
+                            else:
+                                self.ball.lastWinner = "left"
+                        else:
+                            self.randomSide = False
+                            self.randomStart(False)
                     elif math.ceil(self.gameCountdown) == 2:
                         self.drawCountdown(2) 
                     elif math.ceil(self.gameCountdown) == 1:
@@ -389,6 +445,8 @@ class Game:
                         self.gameState = "active"
                     elif math.ceil(self.gameCountdown) == -1:
                         self.drawCountdown("")
+                        self.arrowInit = False
+                        self.randomSide = True
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -398,30 +456,35 @@ class Game:
                         self.quit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mousePos = pygame.mouse.get_pos()
-                    if self.playagainRect.collidepoint(mousePos):
-                        self.score[0] = 0 
-                        self.score[1] = 0
-                        self.drawScores()
+                    if self.score[0] == 5 or self.score[1] == 5:
+                        if self.playagainRect.collidepoint(mousePos):
+                            self.score[0] = 0 
+                            self.score[1] = 0
+                            self.drawScores()
 
-                        if self.gamemode == "bot 1v1":
-                            self.leftUpdateTime = random.randint(2,12)
-                            self.leftRandomSpace = random.randint(0,10)
-                            self.leftTargeting = random.randint(0,20)
-                            self.leftCloseTargeting = random.randint(50,150)
+                            if self.gamemode == "bot 1v1":
+                                self.leftUpdateTime = random.randint(2,12)
+                                self.leftRandomSpace = random.randint(0,10)
+                                self.leftTargeting = random.randint(0,20)
+                                self.leftCloseTargeting = random.randint(50,150)
 
-                        if self.gamemode == "1 player" or self.gamemode == "bot 1v1":
-                            self.rightUpdateTime = random.randint(2,12)
-                            self.rightRandomSpace = random.randint(0,10)
-                            self.rightTargeting = random.randint(20,50)
-                            self.rightCloseTargeting = random.randint(50,150)
+                            if self.gamemode == "1 player" or self.gamemode == "bot 1v1":
+                                self.rightUpdateTime = random.randint(2,12)
+                                self.rightRandomSpace = random.randint(0,10)
+                                self.rightTargeting = random.randint(20,50)
+                                self.rightCloseTargeting = random.randint(50,150)
 
-                        self.cover.set_alpha(0)
-                        self.gameover.set_alpha(0)
-                        self.playagain.set_alpha(0)
-                        self.returntomenu.set_alpha(0)
-                        self.coverAlpha = 0
-                    if self.returntomenuRect.collidepoint(mousePos):
-                        backToMenu()
+                            self.cover.set_alpha(0)
+                            self.gameover.set_alpha(0)
+                            self.playagain.set_alpha(0)
+                            self.returntomenu.set_alpha(0)
+                            self.coverAlpha = 0
+                            self.gameCountdown = 9
+                            self.initialSide = random.randint(0,1)
+                            self.randomSide = False
+                            self.arrowInit = False
+                        if self.returntomenuRect.collidepoint(mousePos):
+                            backToMenu()
     
     def quit(self):
         pygame.quit()

@@ -132,6 +132,7 @@ class Ball(pygame.sprite.Sprite):
 
     def resetBall(self):
         self.game.fireballActive = False
+        self.game.arrowInit = True
         self.bounceCount = 0
         self.y = self.originy
         self.x = self.originx
@@ -273,7 +274,8 @@ class Ball(pygame.sprite.Sprite):
             if self.game.fireballActive:
                 self.rect = self.image.get_rect(center = (self.game.ball.x + self.game.ball.width/2 - 1 + random.uniform(-5,5), self.game.ball.y + self.game.ball.height/2 - 1 + random.uniform(-5,5)))
                 if self.game.counter%3 == 0:
-                    self.game.particleSpawner.spawnParticles(self.color, self.game.ball.x + self.game.ball.width/2 - 1 + random.uniform(-25,25), self.game.ball.y + self.game.ball.height/2 - 1 + random.uniform(-25,25), "fire")
+                    if hasattr(self.game, 'particleSpawner'):
+                        self.game.particleSpawner.spawnParticles(self.color, self.game.ball.x + self.game.ball.width/2 - 1 + random.uniform(-25,25), self.game.ball.y + self.game.ball.height/2 - 1 + random.uniform(-25,25), "fire")
 
 
 class Particle(pygame.sprite.Sprite):
