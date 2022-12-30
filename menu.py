@@ -48,6 +48,7 @@ class Menu:
         self.particleSpawner = ParticleSpawner()
 
         gameFont5x5small = pygame.font.Font("assets/bit5x5.ttf", 32)
+        gameFont5x5smallsmall = pygame.font.Font("assets/bit5x5.ttf", 22)
         gameFont5x5large = pygame.font.Font("assets/bit5x5.ttf", 124)
 
         self.widthAdj = 50
@@ -76,7 +77,7 @@ class Menu:
 
         self.creditsButton = gameFont5x5small.render("Credits", False, LIGHTGREY)
         self.creditsButtonRect = self.creditsButton.get_rect(center = (WIDTH/2, HEIGHT/2 + 250))
-
+        
         self.player1menu = Player(self, WIDTH/2 + self.playButtonRect.width * 1.5 - 7, self.playButtonRect.y - self.playButtonRect.height/2, WIDTH/100, HEIGHT/15, "menu1", "2 player")
         self.player2menu = Player(self, WIDTH/2 - self.playButtonRect.width * 1.5 - 7, self.playButtonRect.y - self.playButtonRect.height/2, WIDTH/100, HEIGHT/15, "menu2", "2 player")
 
@@ -131,7 +132,7 @@ class Menu:
             self.screen.blit(self.credit2, self.credit2Rect)
             self.screen.blit(self.credit11, self.credit11Rect)
             self.screen.blit(self.credit22, self.credit22Rect)
-
+        
         self.particleSpawner.particleGroup.draw(self.screen)
         pygame.display.flip()
 
@@ -236,11 +237,11 @@ class Menu:
             if self.alpha != 0:
                 if self.speed != "fast":
                     if self.counter > 2.5:
-                        self.alpha = 255 / (self.counter - 2.5)
+                        self.alpha = 255 / (round(self.counter,1) - 2.4)
                         self.cover.set_alpha(self.alpha)
                 else:
                     if self.counter > 0.5:
-                        self.alpha = 255 / (self.counter - 0.5)
+                        self.alpha = 255 / (round(self.counter,1) - 0.4)
                         self.cover.set_alpha(self.alpha)
             else:
                 self.cover.set_alpha(self.alpha)

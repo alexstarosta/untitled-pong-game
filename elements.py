@@ -20,6 +20,7 @@ class Player(pygame.sprite.Sprite):
         elif player == 2 or player == "menu2":
             self.image.fill(RED)
         self.rect = self.image.get_rect()
+        self.game = game
         self.velocity = 0
         self.direction = "none"
         self.height = pheight
@@ -29,51 +30,87 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = y
         self.x = x
         self.y = y
+        self.hits = 0
         self.up = False
         self.down = False
+        self.powerup = False
 
     def getInput(self):
         if self.player == 1:
             if self.gamemode == "bot 1v1":
                 if self.up:
-                    self.velocity = -PADDLE_SPEED
+                    if self.powerup:
+                        self.velocity = -PADDLE_SPEED - POWERUP_INCREASE
+                    else:
+                        self.velocity = -PADDLE_SPEED
                     self.direction = "up"
                 if self.down:
-                    self.velocity = PADDLE_SPEED
+                    if self.powerup:
+                        self.velocity = PADDLE_SPEED + POWERUP_INCREASE
+                    else:
+                        self.velocity = PADDLE_SPEED
                     self.direction = "down"
                 if self.velocity != 0: 
                     self.velocity *= 0.7
             else:
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_w]:
-                    self.velocity = -PADDLE_SPEED
+                    if self.powerup:
+                        self.velocity = -PADDLE_SPEED - POWERUP_INCREASE
+                    else:
+                        self.velocity = -PADDLE_SPEED
                     self.direction = "up"
                 if keys[pygame.K_s]:
-                    self.velocity = PADDLE_SPEED
+                    if self.powerup:
+                        self.velocity = PADDLE_SPEED + POWERUP_INCREASE
+                    else:
+                        self.velocity = PADDLE_SPEED
                     self.direction = "down"
                 if self.velocity != 0: 
                     self.velocity *= 0.7
+                if keys[pygame.K_d]:
+                    if self.game.leftPowerupAllowed and self.game.gameState == "active":
+                        self.game.leftPowerupAllowed = False
+                        self.hits = 0
+                        self.game.leftPowerup = POWERUP_TIME * 100
 
         if self.player == 2:
             if self.gamemode == "1 player" or self.gamemode == "bot 1v1":
                 if self.up:
-                    self.velocity = -PADDLE_SPEED
+                    if self.powerup:
+                        self.velocity = -PADDLE_SPEED - POWERUP_INCREASE
+                    else:
+                        self.velocity = -PADDLE_SPEED
                     self.direction = "up"
                 if self.down:
-                    self.velocity = PADDLE_SPEED
+                    if self.powerup:
+                        self.velocity = PADDLE_SPEED + POWERUP_INCREASE
+                    else:
+                        self.velocity = PADDLE_SPEED
                     self.direction = "down"
                 if self.velocity != 0: 
                     self.velocity *= 0.7
             else:
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_UP]:
-                    self.velocity = -PADDLE_SPEED
+                    if self.powerup:
+                        self.velocity = -PADDLE_SPEED - POWERUP_INCREASE
+                    else:
+                        self.velocity = -PADDLE_SPEED
                     self.direction = "up"
                 if keys[pygame.K_DOWN]:
-                    self.velocity = PADDLE_SPEED
+                    if self.powerup:
+                        self.velocity = PADDLE_SPEED + POWERUP_INCREASE
+                    else:
+                        self.velocity = PADDLE_SPEED
                     self.direction = "down"
                 if self.velocity != 0: 
                     self.velocity *= 0.7
+                if keys[pygame.K_LEFT] and self.game.gameState == "active":
+                    if self.game.rightPowerupAllowed:
+                        self.game.rightPowerupAllowed = False
+                        self.hits = 0
+                        self.game.rightPowerup = POWERUP_TIME * 100
 
     def checkPlacement(self, direction):
         if direction == "up":
@@ -149,7 +186,7 @@ class Ball(pygame.sprite.Sprite):
             self.xVel -= amount
 
     def checkWalls(self):
-        if self.y < 0 or self.y > HEIGHT - self.height:
+        if self.y <= 0 or self.y >= HEIGHT - self.height:
             self.yVel *= -1
         if self.x < 0:
             self.resetBall()
@@ -208,6 +245,9 @@ class Ball(pygame.sprite.Sprite):
 
             self.game.fireballActive = False
 
+            if self.game.leftPowerup == 0:
+                self.game.player1.hits += 1
+
             if self.angle > 65:
                 self.angle = 65
                 self.game.fireballActive = True
@@ -235,6 +275,9 @@ class Ball(pygame.sprite.Sprite):
             self.angle = ((bally + self.height/2) - refPointy) / ((ballx + self.width) - refPointx) * 45
 
             self.game.fireballActive = False
+
+            if self.game.rightPowerup == 0:
+                self.game.player2.hits += 1
 
             if self.angle > 65:
                 self.angle = 65
