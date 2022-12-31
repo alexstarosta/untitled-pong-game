@@ -37,18 +37,19 @@ class Player(pygame.sprite.Sprite):
 
     def getInput(self):
         if self.player == 1:
+            import settings
             if self.gamemode == "bot 1v1":
                 if self.up:
                     if self.powerup:
-                        self.velocity = -PADDLE_SPEED - POWERUP_INCREASE
+                        self.velocity = -settings.PADDLE_SPEED - settings.POWERUP_INCREASE
                     else:
-                        self.velocity = -PADDLE_SPEED
+                        self.velocity = -settings.PADDLE_SPEED
                     self.direction = "up"
                 if self.down:
                     if self.powerup:
-                        self.velocity = PADDLE_SPEED + POWERUP_INCREASE
+                        self.velocity = settings.PADDLE_SPEED + settings.POWERUP_INCREASE
                     else:
-                        self.velocity = PADDLE_SPEED
+                        self.velocity = settings.PADDLE_SPEED
                     self.direction = "down"
                 if self.velocity != 0: 
                     self.velocity *= 0.7
@@ -56,37 +57,39 @@ class Player(pygame.sprite.Sprite):
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_w]:
                     if self.powerup:
-                        self.velocity = -PADDLE_SPEED - POWERUP_INCREASE
+                        self.velocity = -settings.PADDLE_SPEED - settings.POWERUP_INCREASE
                     else:
-                        self.velocity = -PADDLE_SPEED
+                        self.velocity = -settings.PADDLE_SPEED
                     self.direction = "up"
                 if keys[pygame.K_s]:
                     if self.powerup:
-                        self.velocity = PADDLE_SPEED + POWERUP_INCREASE
+                        self.velocity = settings.PADDLE_SPEED + settings.POWERUP_INCREASE
                     else:
-                        self.velocity = PADDLE_SPEED
+                        self.velocity = settings.PADDLE_SPEED
                     self.direction = "down"
                 if self.velocity != 0: 
                     self.velocity *= 0.7
                 if keys[pygame.K_d]:
+                    import settings
                     if self.game.leftPowerupAllowed and self.game.gameState == "active":
                         self.game.leftPowerupAllowed = False
                         self.hits = 0
-                        self.game.leftPowerup = POWERUP_TIME * 100
+                        self.game.leftPowerup = settings.POWERUP_TIME * 100
 
         if self.player == 2:
+            import settings
             if self.gamemode == "1 player" or self.gamemode == "bot 1v1":
                 if self.up:
                     if self.powerup:
-                        self.velocity = -PADDLE_SPEED - POWERUP_INCREASE
+                        self.velocity = -settings.PADDLE_SPEED - settings.POWERUP_INCREASE
                     else:
-                        self.velocity = -PADDLE_SPEED
+                        self.velocity = -settings.PADDLE_SPEED
                     self.direction = "up"
                 if self.down:
                     if self.powerup:
-                        self.velocity = PADDLE_SPEED + POWERUP_INCREASE
+                        self.velocity = settings.PADDLE_SPEED + settings.POWERUP_INCREASE
                     else:
-                        self.velocity = PADDLE_SPEED
+                        self.velocity = settings.PADDLE_SPEED
                     self.direction = "down"
                 if self.velocity != 0: 
                     self.velocity *= 0.7
@@ -94,23 +97,24 @@ class Player(pygame.sprite.Sprite):
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_UP]:
                     if self.powerup:
-                        self.velocity = -PADDLE_SPEED - POWERUP_INCREASE
+                        self.velocity = -settings.PADDLE_SPEED - settings.POWERUP_INCREASE
                     else:
-                        self.velocity = -PADDLE_SPEED
+                        self.velocity = -settings.PADDLE_SPEED
                     self.direction = "up"
                 if keys[pygame.K_DOWN]:
                     if self.powerup:
-                        self.velocity = PADDLE_SPEED + POWERUP_INCREASE
+                        self.velocity = settings.PADDLE_SPEED + settings.POWERUP_INCREASE
                     else:
-                        self.velocity = PADDLE_SPEED
+                        self.velocity = settings.PADDLE_SPEED
                     self.direction = "down"
                 if self.velocity != 0: 
                     self.velocity *= 0.7
                 if keys[pygame.K_LEFT] and self.game.gameState == "active":
+                    import settings
                     if self.game.rightPowerupAllowed:
                         self.game.rightPowerupAllowed = False
                         self.hits = 0
-                        self.game.rightPowerup = POWERUP_TIME * 100
+                        self.game.rightPowerup = settings.POWERUP_TIME * 100
 
     def checkPlacement(self, direction):
         if direction == "up":
@@ -186,8 +190,10 @@ class Ball(pygame.sprite.Sprite):
             self.xVel -= amount
 
     def checkWalls(self):
-        if self.y <= 0 or self.y >= HEIGHT - self.height:
-            self.yVel *= -1
+        if self.y <= 0:
+            self.yVel = abs(self.yVel)
+        if self.y >= HEIGHT - self.height:
+            self.yVel = abs(self.yVel) * -1
         if self.x < 0:
             self.resetBall()
             if self.type == "ball":
@@ -258,6 +264,13 @@ class Ball(pygame.sprite.Sprite):
                 self.game.fireballActive = True
                 self.game.fireball.width = WIDTH/30
                 self.game.fireball.height = WIDTH/30
+
+            if self.game.gamemode == "1 player":
+                import settings
+                if self.game.fireballActive:
+                    settings.FIREBALLS += 1
+                else:
+                    settings.HITS += 1
 
             self.xVel -= 0.2
 
@@ -408,7 +421,8 @@ class KeybindChecker(pygame.sprite.Sprite):
 
     def update(self):
         if self.hidden == False:
-            self.tickspeed = self.clock.tick(FPS) / 1000.0
+            import settings
+            self.tickspeed = self.clock.tick(settings.FPS) / 1000.0
             if self.fadeIn:
                 self.counter += self.tickspeed * 2
                 self.alpha = 255 * self.easeOutQuad(self.counter) + 100

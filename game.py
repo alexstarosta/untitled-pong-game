@@ -7,7 +7,7 @@
 import math
 import pygame
 import sys
-from settings import *
+import settings
 from elements import *
 from menu import *
 
@@ -143,7 +143,7 @@ class Game:
             self.rightwins = 0
 
     def setup(self):
-
+        import settings
         self.elements = pygame.sprite.Group()
         self.ballElements = pygame.sprite.Group()
 
@@ -153,9 +153,9 @@ class Game:
         self.player1 = Player(self, WIDTH/50, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 1, self.gamemode)
         self.player2 = Player(self, WIDTH - 2*WIDTH/50 + 1, HEIGHT/2 - HEIGHT/12, WIDTH/50, HEIGHT/6, 2, self.gamemode)
 
-        self.fireball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, 1*BALL_SPEED, 0.0*BALL_SPEED, 0, 0, FIREORANGE, "fireball")
+        self.fireball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, 1*settings.BALL_SPEED, 0, 0, 0, FIREORANGE, "fireball")
 
-        self.ball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, -1*BALL_SPEED, 0.0*BALL_SPEED, WIDTH/50, WIDTH/50, LIGHTGREY, "ball")
+        self.ball = Ball(self, WIDTH/2 - ((WIDTH/50)/2), HEIGHT/2, -1*settings.BALL_SPEED, 0, WIDTH/50, WIDTH/50, LIGHTGREY, "ball")
 
         if not self.leftReady:
             self.wkeyCheck = KeybindChecker(self, "w", WIDTH/4 - 50, HEIGHT/3 - 170 + 50, 100, 100, DARKBLUE)
@@ -314,30 +314,31 @@ class Game:
             self.screen.blit(self.arrow, self.arrowRect)
 
         if self.coverAlpha == 0:
-            for i in range(POWERUP_BOUNCE_AMOUNT):
+            import settings
+            for i in range(settings.POWERUP_BOUNCE_AMOUNT):
                 pygame.draw.rect(self.screen, LIGHTGREY, (140 + (i*40), 23, 35, 35), 5)
                 pygame.draw.rect(self.screen, LIGHTGREY, (WIDTH - (140 + (i*40) + 35), 23, 35, 35), 5)
 
-            if self.player1.hits <= POWERUP_BOUNCE_AMOUNT:
+            if self.player1.hits <= settings.POWERUP_BOUNCE_AMOUNT:
                 for i in range(self.player1.hits):
                     pygame.draw.rect(self.screen, LIGHTGREY, (140 + (i*40), 23, 35, 35))
             else:
-                for i in range(POWERUP_BOUNCE_AMOUNT):
+                for i in range(settings.POWERUP_BOUNCE_AMOUNT):
                     pygame.draw.rect(self.screen, LIGHTGREY, (140 + (i*40), 23, 35, 35))
 
-            if self.player2.hits <= POWERUP_BOUNCE_AMOUNT:
+            if self.player2.hits <= settings.POWERUP_BOUNCE_AMOUNT:
                 for i in range(self.player2.hits):
                     pygame.draw.rect(self.screen, LIGHTGREY, (WIDTH - (140 + (i*40) + 35), 23, 35, 35))
             else:
-                for i in range(POWERUP_BOUNCE_AMOUNT):
+                for i in range(settings.POWERUP_BOUNCE_AMOUNT):
                     pygame.draw.rect(self.screen, LIGHTGREY, (WIDTH - (140 + (i*40) + 35), 23, 35, 35))
 
             if self.leftPowerup != 0:
-                pygame.draw.rect(self.screen, BLUE, (140, 66 + 2.5, 120*(self.leftPowerup/(POWERUP_TIME*100)), 20))
+                pygame.draw.rect(self.screen, BLUE, (140, 66 + 2.5, 120*(self.leftPowerup/(settings.POWERUP_TIME*100)), 20))
                 pygame.draw.rect(self.screen, LIGHTGREY, (140, 66, 5, 25))
 
             if self.rightPowerup != 0:
-                pygame.draw.rect(self.screen, RED, (WIDTH - 140 - 120*(self.rightPowerup/(POWERUP_TIME*100)), 66 + 2.5, 120*(self.rightPowerup/(POWERUP_TIME*100)), 20))
+                pygame.draw.rect(self.screen, RED, (WIDTH - 140 - 120*(self.rightPowerup/(settings.POWERUP_TIME*100)), 66 + 2.5, 120*(self.rightPowerup/(settings.POWERUP_TIME*100)), 20))
                 pygame.draw.rect(self.screen, LIGHTGREY, (WIDTH - 140 - 5, 66, 5, 25))
 
         def changeColorGradient(c1, c2, count, type):
@@ -456,6 +457,7 @@ class Game:
         self.autocounter = 400
 
         if self.gamemode == "bot 1v1":
+            import settings
             self.crown.set_alpha(255)
             if self.score[0] < self.score[1]:
                 self.leftUpdateTime = random.randint(2,12)
@@ -466,6 +468,10 @@ class Game:
                 self.rightwins += 1
                 self.leftwins = 0
                 self.crownRect = self.crown.get_rect(center = (WIDTH - 37,120))
+
+                if self.rightwins > settings.BOT_HISCORE:
+                    settings.BOT_HISCORE = self.rightwins
+                    
             else:
                 self.rightUpdateTime = random.randint(2,12)
                 self.rightRandomSpace = random.randint(0,10)
@@ -475,6 +481,9 @@ class Game:
                 self.leftwins += 1
                 self.rightwins = 0
                 self.crownRect = self.crown.get_rect(center = (33,120))
+
+                if self.leftwins > settings.BOT_HISCORE:
+                    settings.BOT_HISCORE = self.leftwins
 
             self.statTableleft = [
                 [
@@ -581,7 +590,6 @@ class Game:
         self.cover.fill(DARKGREY)
         self.coverRect = self.cover.get_rect(center = (WIDTH/2, HEIGHT/2))
         
-        import settings
         if settings.EGG:
             self.gameover = gameFont5x5.render("Game Over", False, WHITE)
             self.playagain = gameFont5x5small.render("Play Again", False, WHITE)
@@ -687,17 +695,19 @@ class Game:
         self.playing = True
         self.gameState = "playing"
         while self.playing:
-            self.tickspeed = self.clock.tick(FPS) / 1000.0
+            import settings
+            self.tickspeed = self.clock.tick(settings.FPS) / 1000.0
             self.elements.update()
             self.ballElements.update()
             self.draw()
 
-            if self.score[0] == WIN_SCORE or self.score[1] == WIN_SCORE:
+            if self.score[0] == settings.WIN_SCORE or self.score[1] == settings.WIN_SCORE:
                 self.endSequence()
 
             self.counter += 1
 
             if self.gamemode == "bot 1v1":
+                import settings
                 if self.counter%self.leftUpdateTime == 0:
                     if self.ball.y >= self.player1.y + self.player1.height/2 - self.leftTargeting and self.ball.y <= self.player1.y + self.player1.height/2 + self.leftTargeting and abs(self.ball.x - self.player1.x) < self.leftCloseTargeting:
                             self.player1.up = False
@@ -712,7 +722,7 @@ class Game:
                     if abs(self.ball.y - self.player1.y + self.player1.height/2) > self.leftPanicDistance and abs(self.ball.x - self.player1.x) < self.leftCloseTargeting*2 and self.leftPowerupAllowed and self.ball.xVel < 0:
                         self.leftPowerupAllowed = False
                         self.player1.hits = 0
-                        self.leftPowerup = POWERUP_TIME * 100
+                        self.leftPowerup = settings.POWERUP_TIME * 100
 
             if self.gamemode == "1 player" or self.gamemode == "bot 1v1":
                 if self.counter%self.rightUpdateTime == 0:
@@ -729,7 +739,7 @@ class Game:
                     if abs(self.ball.y - self.player2.y + self.player2.height/2) > self.rightPanicDistance and abs(self.ball.x - self.player2.x) < self.rightCloseTargeting*2 and self.rightPowerupAllowed and self.ball.xVel > 0:
                         self.rightPowerupAllowed = False
                         self.player2.hits = 0
-                        self.rightPowerup = POWERUP_TIME * 100
+                        self.rightPowerup = settings.POWERUP_TIME * 100
 
             if self.leftReady != True:
                 if self.wkeyCheck.clicked and self.skeyCheck.clicked and self.dkeyCheck.clicked:
@@ -742,10 +752,11 @@ class Game:
             if self.particles == "on":
                 self.particleSpawner.update()
 
-            if self.player1.hits == POWERUP_BOUNCE_AMOUNT:
+            import settings
+            if self.player1.hits == settings.POWERUP_BOUNCE_AMOUNT:
                 self.leftPowerupAllowed = True
 
-            if self.player2.hits == POWERUP_BOUNCE_AMOUNT:
+            if self.player2.hits == settings.POWERUP_BOUNCE_AMOUNT:
                 self.rightPowerupAllowed = True
 
             if self.leftPowerup != 0:
@@ -820,11 +831,16 @@ class Game:
                         self.hideStats = not self.hideStats
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mousePos = pygame.mouse.get_pos()
-                    if self.score[0] == WIN_SCORE or self.score[1] == WIN_SCORE:
+                    import settings
+                    if self.score[0] == settings.WIN_SCORE or self.score[1] == settings.WIN_SCORE:
                         if self.playagainRect.collidepoint(mousePos):
+                            if self.score[0] > self.score[1] and self.gamemode == "1 player":
+                                settings.WINS += 1
                             self.restartPlayAgain()
 
                         if self.returntomenuRect.collidepoint(mousePos):
+                            if self.score[0] > self.score[1] and self.gamemode == "1 player":
+                                settings.WINS += 1
                             backToMenu()
 
                         if self.autobotsRect.collidepoint(mousePos):

@@ -24,6 +24,98 @@ def updateValues(sfx, particles, gamemode):
     settings.PARTICLES = particles
     settings.GAMEMODE = gamemode
 
+def enterCommand(command):
+    c = command
+    cs = c.split(" ")
+
+    import settings
+
+    itemlist = ["fps", "paddle_speed", "ball_speed", "win_require", "p_time", "p_increase", "p_bounce"]
+
+    statlist = ["wins", "hits", "fireballs", "bot_hiscore"]
+
+    if c == "help":
+        return "available commands: change, view, itemlist, statlist, reset_items, reset_stats"
+    if c == "change" or cs[0] == "change":
+        if len(cs) > 1:
+            if cs[1] in itemlist:
+                if cs[2].isnumeric():
+                    if int(cs[2]) <= 0:
+                        return "please enter a value greater than zero for item " + f"{cs[1]}"
+                    i = itemlist.index(cs[1])
+                    if i == 0:
+                        settings.FPS = int(cs[2])
+                    elif i == 1:
+                        settings.PADDLE_SPEED = int(cs[2])
+                    elif i == 2:
+                        settings.BALL_SPEED = int(cs[2])
+                    elif i == 3:
+                        settings.WIN_SCORE = int(cs[2])
+                    elif i == 4:
+                        settings.POWERUP_TIME = int(cs[2])
+                    elif i == 5:
+                        settings.POWERUP_INCREASE = int(cs[2])
+                    elif i == 6:
+                        settings.POWERUP_BOUNCE_AMOUNT = int(cs[2])
+                    return f"{itemlist[i]}" + " was changed to " + f"{cs[2]}"
+                return "please enter a numeric value for item " + f"{cs[1]}"
+            return "item " + f"{cs[1]}" + " not found in itemlist"
+        return "enter 'change <item> <value>' to change an items value"
+    if c == "view" or cs[0] == "view":
+        if len(cs) > 1:
+            if cs[1] in itemlist:
+                i = itemlist.index(cs[1])
+                if i == 0:
+                    return "the current fps is " + f"{settings.FPS}"
+                elif i == 1:
+                    return "the current paddle speed is " + f"{settings.PADDLE_SPEED}" + " speed units"
+                elif i == 2:
+                    return "the current ball speed is " + f"{settings.BALL_SPEED}"
+                elif i == 3:
+                    return "the score needed to win is " + f"{settings.WIN_SCORE}"
+                elif i == 4:
+                    return "the current powerup time is " + f"{settings.POWERUP_TIME}" + " game units"
+                elif i == 5:
+                    return "the current powerup increase is " + f"{settings.POWERUP_INCREASE}" + " speed units"
+                elif i == 6:
+                    return "the amount of bounces need to get a powerup is " + f"{settings.POWERUP_BOUNCE_AMOUNT}" + " bounces"
+            if cs[1] in statlist:
+                i = statlist.index(cs[1])
+                if i == 0:
+                    return "total wins: " + f"{settings.WINS}"
+                elif i == 1:
+                    return "total hits: " + f"{settings.HITS}"
+                elif i == 2:
+                    return "total fireballs: " + f"{settings.FIREBALLS}"
+                elif i == 3:
+                    return "highest bot score: " + f"{settings.BOT_HISCORE}"
+            return "item " + f"{cs[1]}" + " not found in itemlist or statlist"
+        return "enter 'view <item>' to view an item or stat value"
+    if c == "itemlist" or cs[0] == "itemlist":
+        return "avaiable items: fps, paddle_speed, ball_speed, win_require, p_time, p_increase, p_bounce"
+    if c == "statlist" or cs[0] == "statlist":
+        return "avaiable stats: wins, hits, fireballs, bot_hiscore"
+    if c == "reset_items" or cs[0] == "reset_items":
+        settings.FPS = 60
+        settings.PADDLE_SPEED = 8
+        settings.BALL_SPEED = 7
+        settings.WIN_SCORE = 4
+        settings.POWERUP_INCREASE = 7
+        settings.POWERUP_TIME = 3
+        settings.POWERUP_BOUNCE_AMOUNT = 3
+        return "items successfully reset"
+    if c == "reset_stats" or cs[0] == "reset_stats":
+        settings.WINS = 0
+        settings.HITS = 0
+        settings.FIREBALLS = 0
+        settings.BOT_HISCORE = 0
+        return "stats successfully reset"
+    if c == "hi":
+        return "hi :)"
+    if c == "exit":
+        return "exiting..."
+    return "unknown command '" + f"{cs[0]}" + "', type 'help' for more info"
+
 class Menu:
     def __init__(self, sfx, particle, gamemode, speed):
         pygame.font.init()
@@ -42,13 +134,17 @@ class Menu:
         self.ofallspeed = 0
         self.randomfactor = random.uniform(-20,20)
 
+        self.consoleActive = False
+        self.consoleResponse = []
+        self.userInput = ""
+
     def setup(self):
         self.elements = pygame.sprite.Group()
 
         self.particleSpawner = ParticleSpawner()
 
         gameFont5x5small = pygame.font.Font("assets/bit5x5.ttf", 32)
-        gameFont5x5smallsmall = pygame.font.Font("assets/bit5x5.ttf", 22)
+        terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
         gameFont5x5large = pygame.font.Font("assets/bit5x5.ttf", 124)
 
         self.widthAdj = 50
@@ -80,6 +176,9 @@ class Menu:
         
         self.player1menu = Player(self, WIDTH/2 + self.playButtonRect.width * 1.5 - 7, self.playButtonRect.y - self.playButtonRect.height/2, WIDTH/100, HEIGHT/15, "menu1", "2 player")
         self.player2menu = Player(self, WIDTH/2 - self.playButtonRect.width * 1.5 - 7, self.playButtonRect.y - self.playButtonRect.height/2, WIDTH/100, HEIGHT/15, "menu2", "2 player")
+
+        self.userInputRender = terminalFont.render(f"{self.userInput}", False, GREEN)
+        self.consoleStart = terminalFont.render("C:/UntitledPongGame/>", False, GREEN)
 
         if self.speed != "fast":
             self.cover = pygame.Surface([WIDTH, HEIGHT* 0.6])
@@ -134,6 +233,27 @@ class Menu:
             self.screen.blit(self.credit22, self.credit22Rect)
         
         self.particleSpawner.particleGroup.draw(self.screen)
+
+        if self.consoleActive:
+            console = pygame.Surface((WIDTH,HEIGHT/4))
+            console.set_alpha(128)
+            console.fill((0,0,0))
+            self.screen.blit(console, (0,0))
+
+            self.userInputRenderRect = self.userInputRender.get_rect(bottomleft = (217, HEIGHT/4 - 5))
+            self.screen.blit(self.userInputRender, self.userInputRenderRect)
+
+            self.consoleStartRect = self.consoleStart.get_rect(bottomleft = (5, HEIGHT/4 - 5))
+            self.screen.blit(self.consoleStart, self.consoleStartRect)
+
+            if len(self.consoleResponse) != 0:
+                for i in range(len(self.consoleResponse)):
+                    terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
+
+                    self.text = terminalFont.render(f"{self.consoleResponse[i]}", False, GREEN)
+                    self.textRect = self.userInputRender.get_rect(bottomleft = (5, HEIGHT/4 - 50 - (i*25)))
+                    self.screen.blit(self.text, self.textRect)
+
         pygame.display.flip()
 
     def updateMenuItems(self, adj):
@@ -224,7 +344,8 @@ class Menu:
 
         gameFont5x5small = pygame.font.Font("assets/bit5x5.ttf", 32)
         while self.menuOpen:
-            self.tickspeed = self.clock.tick(FPS) / 1000
+            import settings
+            self.tickspeed = self.clock.tick(settings.FPS) / 1000
             self.elements.update()
 
             if self.speed == "fast":
@@ -351,7 +472,27 @@ class Menu:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.quit()
-                if self.counter > 3:
+                    if event.key == pygame.K_BACKQUOTE:
+                        self.consoleActive = not self.consoleActive
+                if self.consoleActive:
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_BACKSPACE:
+                            self.userInput = self.userInput[:-1]
+                            terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
+                            self.userInputRender = terminalFont.render(f"{self.userInput}", False, GREEN)
+                        elif event.key == pygame.K_RETURN and self.userInput != "":
+                            if enterCommand(self.userInput) == "exiting...":
+                                self.consoleActive = not self.consoleActive
+                            self.consoleResponse.insert(0,enterCommand(self.userInput))
+                            self.userInput = ""
+                            terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
+                            self.userInputRender = terminalFont.render(f"{self.userInput}", False, GREEN)
+                        else:
+                            if event.key != pygame.K_BACKQUOTE and event.key != pygame.K_RETURN:
+                                self.userInput += event.unicode
+                                terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
+                                self.userInputRender = terminalFont.render(f"{self.userInput}", False, GREEN)
+                if self.counter > 3 and not self.consoleActive:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if self.playButtonRect.collidepoint(mousePos):
                             updateValues(self.sfxSetting, self.particleSetting, self.gamemode)
