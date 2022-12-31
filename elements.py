@@ -72,6 +72,9 @@ class Player(pygame.sprite.Sprite):
                 if keys[pygame.K_d]:
                     import settings
                     if self.game.leftPowerupAllowed and self.game.gameState == "active":
+                        if settings.SFX == "on":
+                            import audio
+                            audio.powerupSfx.play()
                         self.game.leftPowerupAllowed = False
                         self.hits = 0
                         self.game.leftPowerup = settings.POWERUP_TIME * 100
@@ -109,9 +112,12 @@ class Player(pygame.sprite.Sprite):
                     self.direction = "down"
                 if self.velocity != 0: 
                     self.velocity *= 0.7
-                if keys[pygame.K_LEFT] and self.game.gameState == "active":
+                if keys[pygame.K_LEFT]:
                     import settings
-                    if self.game.rightPowerupAllowed:
+                    if self.game.rightPowerupAllowed and self.game.gameState == "active":
+                        if settings.SFX == "on":
+                            import audio
+                            audio.powerupSfx.play()
                         self.game.rightPowerupAllowed = False
                         self.hits = 0
                         self.game.rightPowerup = settings.POWERUP_TIME * 100
@@ -190,10 +196,16 @@ class Ball(pygame.sprite.Sprite):
             self.xVel -= amount
 
     def checkWalls(self):
+        import audio
+        import settings
         if self.y <= 0:
             self.yVel = abs(self.yVel)
+            if settings.SFX == "on":
+                audio.ballhitSfx.play()
         if self.y >= HEIGHT - self.height:
             self.yVel = abs(self.yVel) * -1
+            if settings.SFX == "on":
+                audio.ballhitSfx.play()
         if self.x < 0:
             self.resetBall()
             if self.type == "ball":
@@ -212,6 +224,8 @@ class Ball(pygame.sprite.Sprite):
                 self.game.drawScores()
         if self.x < WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = abs(self.xVel)
+            if settings.SFX == "on":
+                audio.ballhitSfx.play()
             if self.side == "unknown" or self.side == "left":
                 self.calcYVel(self.game.elements.sprites()[0], self.game.elements.sprites()[1], self.y, self.x, "left")
                 if self.type == "ball":
@@ -225,6 +239,8 @@ class Ball(pygame.sprite.Sprite):
                 self.bounceCount += 1
         if self.x > WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = -abs(self.xVel)
+            if settings.SFX == "on":
+                audio.ballhitSfx.play()
             if self.side == "unknown" or self.side == "right":
                 self.calcYVel(self.game.elements.sprites()[0], self.game.elements.sprites()[1], self.y, self.x, "right")
                 if self.type == "ball":
@@ -238,7 +254,8 @@ class Ball(pygame.sprite.Sprite):
                 self.bounceCount += 1
 
     def calcYVel(self, player1, player2, bally, ballx, side):
-
+        import audio
+        import settings
         if self.type == "fireball":
             return
 
@@ -257,11 +274,15 @@ class Ball(pygame.sprite.Sprite):
             if self.angle > 65:
                 self.angle = 65
                 self.game.fireballActive = True
+                if settings.SFX == "on":
+                    audio.fireballSfx.play()
                 self.game.fireball.width = WIDTH/30
                 self.game.fireball.height = WIDTH/30
             elif self.angle < -65:
                 self.angle = -65
                 self.game.fireballActive = True
+                if settings.SFX == "on":
+                    audio.fireballSfx.play()
                 self.game.fireball.width = WIDTH/30
                 self.game.fireball.height = WIDTH/30
 
@@ -295,11 +316,15 @@ class Ball(pygame.sprite.Sprite):
             if self.angle > 65:
                 self.angle = 65
                 self.game.fireballActive = True
+                if settings.SFX == "on":
+                    audio.fireballSfx.play()
                 self.game.fireball.width = WIDTH/30
                 self.game.fireball.height = WIDTH/30
             elif self.angle < -65:
                 self.angle = -65
                 self.game.fireballActive = True
+                if settings.SFX == "on":
+                    audio.fireballSfx.play()
                 self.game.fireball.width = WIDTH/30
                 self.game.fireball.height = WIDTH/30
 

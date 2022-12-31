@@ -7,7 +7,6 @@
 import math
 import pygame
 import sys
-import settings
 from elements import *
 from menu import *
 
@@ -69,6 +68,7 @@ class Game:
         self.counter2 = 0
         self.autocounter = 400
         self.hideStats = False
+        self.lastcount = 0
 
         if gamemode == "bot 1v1":
             self.statTableleft = [
@@ -417,6 +417,17 @@ class Game:
         self.startingText = gameFont.render(f"{text}", False, LIGHTGREY)
         self.startingTextRect = self.startingText.get_rect(center = (WIDTH/1.92 - ((WIDTH/50)/2), HEIGHT/4))
 
+        if math.ceil(self.gameCountdown) >= 0:
+            if math.ceil(self.gameCountdown) != self.lastcount:
+                self.lastcount = math.ceil(self.gameCountdown)
+                import audio
+                import settings
+                if settings.SFX == "on":
+                    if self.lastcount == 0:
+                        audio.countdownstartSfx.play()
+                    else:
+                        audio.countdownSfx.play()
+
         self.screen.blit(self.startingText, self.startingTextRect)
         pygame.display.flip() 
 
@@ -679,11 +690,17 @@ class Game:
                 else:
                     self.initialSide = 1
 
+                import audio
+                import settings
+                if settings.SFX == "on":
+                    audio.arrowSfx.play()
+
             if self.initialSide == 1:
                 self.arrow = gameFont5x5small.render("-}", False, LIGHTGREY)
             else:
                 self.arrow = gameFont5x5small.render("{-", False, LIGHTGREY)
             self.arrowRect = self.arrow.get_rect(center = (WIDTH/2, HEIGHT/2.5))
+
         else:
             if self.ball.lastWinner == "right":
                 self.arrow = gameFont5x5small.render("{-", False, LIGHTGREY)
@@ -720,6 +737,10 @@ class Game:
                             self.player1.up = False
                             self.player1.down = True
                     if abs(self.ball.y - self.player1.y + self.player1.height/2) > self.leftPanicDistance and abs(self.ball.x - self.player1.x) < self.leftCloseTargeting*2 and self.leftPowerupAllowed and self.ball.xVel < 0:
+                        import audio
+                        import settings
+                        if settings.SFX == "on":
+                            audio.powerupSfx.play()
                         self.leftPowerupAllowed = False
                         self.player1.hits = 0
                         self.leftPowerup = settings.POWERUP_TIME * 100
@@ -737,6 +758,10 @@ class Game:
                             self.player2.up = False
                             self.player2.down = True
                     if abs(self.ball.y - self.player2.y + self.player2.height/2) > self.rightPanicDistance and abs(self.ball.x - self.player2.x) < self.rightCloseTargeting*2 and self.rightPowerupAllowed and self.ball.xVel > 0:
+                        import audio
+                        import settings
+                        if settings.SFX == "on":
+                            audio.powerupSfx.play()
                         self.rightPowerupAllowed = False
                         self.player2.hits = 0
                         self.rightPowerup = settings.POWERUP_TIME * 100
@@ -829,6 +854,8 @@ class Game:
                         self.quit()
                     if event.key == pygame.K_TAB:
                         self.hideStats = not self.hideStats
+                    if event.key == pygame.K_l and self.gamemode == "bot 1v1":
+                        backToMenu()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mousePos = pygame.mouse.get_pos()
                     import settings

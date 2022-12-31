@@ -29,15 +29,16 @@ def enterCommand(command):
     cs = c.split(" ")
 
     import settings
+    import audio
 
     itemlist = ["fps", "paddle_speed", "ball_speed", "win_require", "p_time", "p_increase", "p_bounce"]
 
     statlist = ["wins", "hits", "fireballs", "bot_hiscore"]
 
     if c == "help":
-        return "available commands: change, view, itemlist, statlist, reset_items, reset_stats"
+        return "available commands: change, view, itemlist, statlist, reset_items, reset_stats, controls"
     if c == "change" or cs[0] == "change":
-        if len(cs) > 1:
+        if len(cs) > 2:
             if cs[1] in itemlist:
                 if cs[2].isnumeric():
                     if int(cs[2]) <= 0:
@@ -57,8 +58,14 @@ def enterCommand(command):
                         settings.POWERUP_INCREASE = int(cs[2])
                     elif i == 6:
                         settings.POWERUP_BOUNCE_AMOUNT = int(cs[2])
+                    if settings.SFX == "on":
+                        audio.consolegoodSfx.play()
                     return f"{itemlist[i]}" + " was changed to " + f"{cs[2]}"
+                if settings.SFX == "on":
+                    audio.consolebadSfx.play()
                 return "please enter a numeric value for item " + f"{cs[1]}"
+            if settings.SFX == "on":
+                audio.consolebadSfx.play()
             return "item " + f"{cs[1]}" + " not found in itemlist"
         return "enter 'change <item> <value>' to change an items value"
     if c == "view" or cs[0] == "view":
@@ -79,7 +86,7 @@ def enterCommand(command):
                     return "the current powerup increase is " + f"{settings.POWERUP_INCREASE}" + " speed units"
                 elif i == 6:
                     return "the amount of bounces need to get a powerup is " + f"{settings.POWERUP_BOUNCE_AMOUNT}" + " bounces"
-            if cs[1] in statlist:
+            elif cs[1] in statlist:
                 i = statlist.index(cs[1])
                 if i == 0:
                     return "total wins: " + f"{settings.WINS}"
@@ -89,6 +96,8 @@ def enterCommand(command):
                     return "total fireballs: " + f"{settings.FIREBALLS}"
                 elif i == 3:
                     return "highest bot score: " + f"{settings.BOT_HISCORE}"
+            if settings.SFX == "on":
+                audio.consolebadSfx.play()
             return "item " + f"{cs[1]}" + " not found in itemlist or statlist"
         return "enter 'view <item>' to view an item or stat value"
     if c == "itemlist" or cs[0] == "itemlist":
@@ -103,17 +112,27 @@ def enterCommand(command):
         settings.POWERUP_INCREASE = 7
         settings.POWERUP_TIME = 3
         settings.POWERUP_BOUNCE_AMOUNT = 3
+        if settings.SFX == "on":
+            audio.consolegoodSfx.play()
         return "items successfully reset"
     if c == "reset_stats" or cs[0] == "reset_stats":
         settings.WINS = 0
         settings.HITS = 0
         settings.FIREBALLS = 0
         settings.BOT_HISCORE = 0
+        if settings.SFX == "on":
+            audio.consolegoodSfx.play()
         return "stats successfully reset"
     if c == "hi":
         return "hi :)"
     if c == "exit":
+        if settings.SFX == "on":
+            audio.buttonSfx.play()
         return "exiting..."
+    if c == "controls":
+        return "controls"
+    if settings.SFX == "on":
+        audio.consolebadSfx.play()
     return "unknown command '" + f"{cs[0]}" + "', type 'help' for more info"
 
 class Menu:
@@ -472,7 +491,11 @@ class Menu:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.quit()
-                    if event.key == pygame.K_BACKQUOTE:
+                    if event.key == pygame.K_BACKQUOTE or event.key == pygame.K_RALT:
+                        import audio
+                        import settings
+                        if settings.SFX == "on":
+                            audio.buttonSfx.play()
                         self.consoleActive = not self.consoleActive
                 if self.consoleActive:
                     if event.type == pygame.KEYDOWN:
@@ -481,36 +504,53 @@ class Menu:
                             terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
                             self.userInputRender = terminalFont.render(f"{self.userInput}", False, GREEN)
                         elif event.key == pygame.K_RETURN and self.userInput != "":
-                            if enterCommand(self.userInput) == "exiting...":
-                                self.consoleActive = not self.consoleActive
-                            self.consoleResponse.insert(0,enterCommand(self.userInput))
-                            self.userInput = ""
-                            terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
-                            self.userInputRender = terminalFont.render(f"{self.userInput}", False, GREEN)
+                            if enterCommand(self.userInput) == "controls":
+                                self.consoleResponse.insert(0,"movement controls : W/up arrow = up, S/down arrow = down, D/left arrow = powerup")
+                                self.consoleResponse.insert(0,"bot 1v1 controls  : tab = hide bot stats, L = leave match")
+                                self.userInput = ""
+                                terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
+                                self.userInputRender = terminalFont.render(f"{self.userInput}", False, GREEN)
+                            else:
+                                if enterCommand(self.userInput) == "exiting...":
+                                    self.consoleActive = not self.consoleActive
+                                self.consoleResponse.insert(0,enterCommand(self.userInput))
+                                self.userInput = ""
+                                terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
+                                self.userInputRender = terminalFont.render(f"{self.userInput}", False, GREEN)
                         else:
                             if event.key != pygame.K_BACKQUOTE and event.key != pygame.K_RETURN:
                                 self.userInput += event.unicode
                                 terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
                                 self.userInputRender = terminalFont.render(f"{self.userInput}", False, GREEN)
                 if self.counter > 3 and not self.consoleActive:
+                    import audio
+                    import settings
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if self.playButtonRect.collidepoint(mousePos):
+                            if settings.SFX == "on":
+                                audio.buttonSfx.play()
                             updateValues(self.sfxSetting, self.particleSetting, self.gamemode)
                             startGame(self.gamemode, self.sfxSetting, self.particleSetting)
                         elif self.optionsButtonRect.collidepoint(mousePos):
-                                if self.optionsOpen:
-                                    self.setupOptions("close")
-                                else:
-                                    self.setupCredits("close")
-                                    self.setupOptions("open")
+                            if settings.SFX == "on":
+                                audio.buttonSfx.play()
+                            if self.optionsOpen:
+                                self.setupOptions("close")
+                            else:
+                                self.setupCredits("close")
+                                self.setupOptions("open")
                         elif self.creditsButtonRect.collidepoint(mousePos):
-                                if self.creditsOpen:
-                                    self.setupCredits("close")
-                                else:
-                                    self.setupOptions("close")
-                                    self.setupCredits("open")
+                            if settings.SFX == "on":
+                                audio.buttonSfx.play()
+                            if self.creditsOpen:
+                                self.setupCredits("close")
+                            else:
+                                self.setupOptions("close")
+                                self.setupCredits("open")
 
                         if self.textoRect.collidepoint(mousePos):
+                            if settings.SFX == "on":
+                                audio.ostrikeSfx.play()
                             self.oclick += 1
                             self.particleSpawner.spawnParticles(LIGHTGREY, mousePos[0], mousePos[1], "fire")
                             if self.oclick > 2:
@@ -521,12 +561,18 @@ class Menu:
                         if self.optionsOpen:
                             if self.sfxButtonActionRect.collidepoint(mousePos):
                                 if self.sfxSetting == "on":
+                                    import settings
+                                    settings.SFX = "off"
                                     self.sfxSetting = "off"
                                 else:
+                                    audio.sfxonSfx.play()
+                                    settings.SFX = "on"
                                     self.sfxSetting = "on"
                             self.reRenderSettings()
                     
                             if self.partiButtonActionRect.collidepoint(mousePos):
+                                if settings.SFX == "on":
+                                    audio.buttonSfx.play()
                                 if self.particleSetting == "on":
                                     self.particleSetting = "off"
                                 else:
@@ -535,6 +581,8 @@ class Menu:
                             self.reRenderSettings()
 
                             if self.modeButtonActionRect.collidepoint(mousePos):
+                                if settings.SFX == "on":
+                                    audio.buttonSfx.play()
                                 if self.gamemode == "1 player":
                                     self.gamemode = "2 player"
                                 elif self.gamemode == "2 player":
