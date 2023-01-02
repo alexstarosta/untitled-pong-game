@@ -5,12 +5,9 @@
 ##
 
 import pygame
-import time
 import settings
 from elements import *
 from menu import *
-
-time.sleep(1)
 
 programIcon = pygame.image.load('assets/icon.png')
 pygame.display.set_icon(programIcon)
