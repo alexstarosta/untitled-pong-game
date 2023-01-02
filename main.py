@@ -5,15 +5,18 @@
 ##
 
 import pygame
-from settings import *
+import time
+import settings
 from elements import *
 from menu import *
+
+time.sleep(1)
 
 programIcon = pygame.image.load('assets/icon.png')
 pygame.display.set_icon(programIcon)
 
 pygame.mixer.init()
 
-menu = Menu(SFX, PARTICLES, GAMEMODE, "normal")
+menu = Menu(settings.SFX, settings.PARTICLES, settings.GAMEMODE, "normal")
 menu.setup()
 menu.run()

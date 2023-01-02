@@ -92,7 +92,7 @@ class Game:
                     30
                 ],
                 [
-                    "Side Targeting",
+                    "Side Scan",
                     self.leftCloseTargeting - 50,
                     100
                 ],
@@ -137,7 +137,7 @@ class Game:
                     50
                 ],
                 [
-                    "Side Targeting",
+                    "Side Scan",
                     self.rightCloseTargeting - 50,
                     100
                 ],
@@ -226,8 +226,16 @@ class Game:
             self.rectTab = []
             for stat in self.statTableleft:
                 i = self.counter1
-
-                heading = gameFont5x3small.render(f"{stat[0]}", False, LIGHTLIGHTGREY)
+                if stat[1] > stat[2] - stat[2]*0.1:
+                    txtcolor = DARKGOLD
+                else:
+                    txtcolor = LIGHTLIGHTGREY
+                if stat[0] == "Reaction":
+                    if stat[1] < stat[2]*0.1:
+                        txtcolor = DARKGOLD
+                    else:
+                        txtcolor = LIGHTLIGHTGREY
+                heading = gameFont5x3small.render(f"{stat[0]}", False, txtcolor)
                 headingRect = heading.get_rect(midleft = (30, HEIGHT - 212 + (i*35)))
 
                 self.headingTab.insert(1,heading)
@@ -237,8 +245,16 @@ class Game:
 
             for stat in self.statTableright:
                 i = self.counter2
-
-                heading = gameFont5x3small.render(f"{stat[0]}", False, LIGHTLIGHTGREY)
+                if stat[1] > stat[2] - stat[2]*0.1:
+                    txtcolor = DARKGOLD
+                else:
+                    txtcolor = LIGHTLIGHTGREY
+                if stat[0] == "Reaction":
+                    if stat[1] < stat[2]*0.1:
+                        txtcolor = DARKGOLD
+                    else:
+                        txtcolor = LIGHTLIGHTGREY
+                heading = gameFont5x3small.render(f"{stat[0]}", False, txtcolor)
                 headingRect = heading.get_rect(midright = (WIDTH - 27, HEIGHT - 212 + (i*35)))
 
                 self.headingTab.insert(1,heading)
@@ -293,20 +309,50 @@ class Game:
 
                 for stat in self.statTableleft:
                     i = self.counter1
-                    if stat[0] == "Reaction":
-                        pygame.draw.rect(self.screen, DARKBLUE, (19, HEIGHT - 225 + (i*35), 250*((10-stat[1])/stat[2]), 25))
+                    if stat[1] > stat[2] - stat[2]*0.1:
+                        barcolor = GOLD
+                    elif stat[1] < stat[2]*0.1:
+                        barcolor = DARKERBLUE
                     else:
-                        pygame.draw.rect(self.screen, DARKBLUE, (19, HEIGHT - 225 + (i*35), 250*(stat[1]/stat[2]), 25))
-                    pygame.draw.rect(self.screen, LIGHTGREY, (19, HEIGHT - 227 + (i*35), 5, 29))
+                        barcolor = DARKBLUE
+                    if stat[0] == "Reaction":
+                        if stat[1] > stat[2] - stat[2]*0.1:
+                            barcolor = DARKERBLUE
+                        elif stat[1] < stat[2]*0.1:
+                            barcolor = GOLD
+                        else:
+                            barcolor = DARKBLUE
+                        pygame.draw.rect(self.screen, barcolor, (19, HEIGHT - 225 + (i*35), 270*((10-stat[1])/stat[2]) + 10, 25))
+                    else:
+                        pygame.draw.rect(self.screen, barcolor, (19, HEIGHT - 225 + (i*35), 270*(stat[1]/stat[2]) + 10, 25))
+                    if barcolor == GOLD:
+                        pygame.draw.rect(self.screen, DARKGOLD, (19, HEIGHT - 227 + (i*35), 5, 29))
+                    else:
+                        pygame.draw.rect(self.screen, LIGHTGREY, (19, HEIGHT - 227 + (i*35), 5, 29))
                     self.counter1 += 1
 
                 for stat in self.statTableright:
                     i = self.counter2
-                    if stat[0] == "Reaction":
-                        pygame.draw.rect(self.screen, DARKRED, (WIDTH - 20 - 250*((10-stat[1])/stat[2]), HEIGHT - 225 + (i*35), 250*((10-stat[1])/stat[2]), 25))
+                    if stat[1] > stat[2] - stat[2]*0.1:
+                        barcolor = GOLD
+                    elif stat[1] < stat[2]*0.1:
+                        barcolor = DARKERRED
                     else:
-                        pygame.draw.rect(self.screen, DARKRED, (WIDTH - 20 - 250*(stat[1]/stat[2]), HEIGHT - 225 + (i*35), 250*(stat[1]/stat[2]), 25))
-                    pygame.draw.rect(self.screen, LIGHTGREY, (WIDTH - 23, HEIGHT - 227 + (i*35), 5, 29))
+                        barcolor = DARKRED
+                    if stat[0] == "Reaction":
+                        if stat[1] > stat[2] - stat[2]*0.1:
+                            barcolor = DARKERRED
+                        elif stat[1] < stat[2]*0.1:
+                            barcolor = GOLD
+                        else:
+                            barcolor = DARKRED
+                        pygame.draw.rect(self.screen, barcolor, (WIDTH - 20 - 270*((10-stat[1])/stat[2]) - 10, HEIGHT - 225 + (i*35), 270*((10-stat[1])/stat[2]) + 10, 25))
+                    else:
+                        pygame.draw.rect(self.screen, barcolor, (WIDTH - 20 - 270*(stat[1]/stat[2]) - 10, HEIGHT - 225 + (i*35), 270*(stat[1]/stat[2]) + 10, 25))
+                    if barcolor == GOLD:
+                        pygame.draw.rect(self.screen, DARKGOLD, (WIDTH - 23, HEIGHT - 227 + (i*35), 5, 29))
+                    else:
+                        pygame.draw.rect(self.screen, LIGHTGREY, (WIDTH - 23, HEIGHT - 227 + (i*35), 5, 29))
                     self.counter2 += 1
 
                 self.counter1 = 0 
@@ -491,6 +537,7 @@ class Game:
                 self.leftTargeting = random.randint(20,50)
                 self.leftCloseTargeting = random.randint(50,150)
                 self.leftPanicDistance = random.randint(100,250)
+                self.leftIntelligence = random.randint(10,80)
                 self.rightwins += 1
                 self.leftwins = 0
                 self.crownRect = self.crown.get_rect(center = (WIDTH - 37,120))
@@ -504,6 +551,7 @@ class Game:
                 self.rightTargeting = random.randint(20,50)
                 self.rightCloseTargeting = random.randint(50,150)
                 self.rightPanicDistance = random.randint(100,250)
+                self.rightIntelligence = random.randint(10,80)
                 self.leftwins += 1
                 self.rightwins = 0
                 self.crownRect = self.crown.get_rect(center = (33,120))
@@ -528,7 +576,7 @@ class Game:
                     30
                 ],
                 [
-                    "Side Targeting",
+                    "Side Scan",
                     self.leftCloseTargeting - 50,
                     100
                 ],
@@ -537,6 +585,11 @@ class Game:
                     self.leftPanicDistance - 100,
                     150
                 ],
+                [
+                    "Intelligence",
+                    self.leftIntelligence - 10,
+                    70
+                ]
             ]
 
             self.statTableright = [
@@ -556,7 +609,7 @@ class Game:
                     50
                 ],
                 [
-                    "Side Targeting",
+                    "Side Scan",
                     self.rightCloseTargeting - 50,
                     100
                 ],
@@ -565,7 +618,58 @@ class Game:
                     self.rightPanicDistance - 100,
                     150
                 ],
+                [
+                    "Intelligence",
+                    self.rightIntelligence - 10,
+                    70
+                ]
             ]
+
+            self.headingTab.clear()
+            self.headingRectTab.clear()
+
+            for stat in self.statTableleft:
+                i = self.counter1
+                gameFont5x3small = pygame.font.Font("assets/bit5x5.ttf", 26)
+                if stat[1] > stat[2] - stat[2]*0.1:
+                    txtcolor = DARKGOLD
+                else:
+                    txtcolor = LIGHTLIGHTGREY
+                if stat[0] == "Reaction":
+                    if stat[1] < stat[2]*0.1:
+                        txtcolor = DARKGOLD
+                    else:
+                        txtcolor = LIGHTLIGHTGREY
+                heading = gameFont5x3small.render(f"{stat[0]}", False, txtcolor)
+                headingRect = heading.get_rect(midleft = (30, HEIGHT - 212 + (i*35)))
+
+                self.headingTab.insert(1,heading)
+                self.headingRectTab.insert(1,headingRect)
+
+                self.counter1 += 1
+
+            for stat in self.statTableright:
+                i = self.counter2
+                gameFont5x3small = pygame.font.Font("assets/bit5x5.ttf", 26)
+                if stat[1] > stat[2] - stat[2]*0.1:
+                    txtcolor = DARKGOLD
+                else:
+                    txtcolor = LIGHTLIGHTGREY
+                if stat[0] == "Reaction":
+                    if stat[1] < stat[2]*0.1:
+                        txtcolor = DARKGOLD
+                    else:
+                        txtcolor = LIGHTLIGHTGREY
+                heading = gameFont5x3small.render(f"{stat[0]}", False, txtcolor)
+                headingRect = heading.get_rect(midright = (WIDTH - 27, HEIGHT - 212 + (i*35)))
+
+                self.headingTab.insert(1,heading)
+                self.headingRectTab.insert(1,headingRect)
+
+                self.counter2 += 1
+
+            self.counter1 = 0 
+            self.counter2 = 0
 
         self.score[0] = 0 
         self.score[1] = 0
@@ -731,6 +835,9 @@ class Game:
             self.tickspeed = self.clock.tick(settings.FPS) / 1000.0
             self.elements.update()
             self.ballElements.update()
+            if self.particles == "on":
+                self.particleSpawner.update()
+                self.particleSpawner.particleGroup.update()
             self.draw()
 
             if self.score[0] == settings.WIN_SCORE or self.score[1] == settings.WIN_SCORE:
@@ -799,9 +906,6 @@ class Game:
             if self.rightReady != True:
                 if self.upkeyCheck.clicked and self.downkeyCheck.clicked and self.leftkeyCheck.clicked:
                     self.rightReady = True
-
-            if self.particles == "on":
-                self.particleSpawner.update()
 
             import settings
             if self.player1.hits == settings.POWERUP_BOUNCE_AMOUNT:
@@ -880,7 +984,7 @@ class Game:
                         self.quit()
                     if event.key == pygame.K_TAB:
                         self.hideStats = not self.hideStats
-                    if event.key == pygame.K_l and self.gamemode == "bot 1v1":
+                    if event.key == pygame.K_l:
                         backToMenu()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mousePos = pygame.mouse.get_pos()

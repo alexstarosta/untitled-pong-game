@@ -24,6 +24,8 @@ def updateValues(sfx, particles, gamemode):
     settings.PARTICLES = particles
     settings.GAMEMODE = gamemode
 
+history = []
+
 def enterCommand(command):
     c = command
     cs = c.split(" ")
@@ -31,12 +33,18 @@ def enterCommand(command):
     import settings
     import audio
 
-    itemlist = ["fps", "paddle_speed", "ball_speed", "win_require", "p_time", "p_increase", "p_bounce"]
+    currentList = [settings.FPS, settings.PADDLE_SPEED, settings.BALL_SPEED, settings.WIN_SCORE, settings.POWERUP_TIME, settings.POWERUP_INCREASE, settings.POWERUP_BOUNCE_AMOUNT]
+    currentStats = [settings.WINS, settings.HITS, settings.FIREBALLS, settings.BOT_HISCORE]
 
+    itemlist = ["fps", "paddle_speed", "ball_speed", "win_require", "p_time", "p_increase", "p_bounce"]
     statlist = ["wins", "hits", "fireballs", "bot_hiscore"]
 
     if c == "help":
-        return "available commands: change, view, itemlist, statlist, reset_items, reset_stats, controls"
+        messages = [
+            "available commands: change, view, itemlist, statlist, reset_items, reset_stats",
+            "controls, unscramble, math, undo"
+        ]
+        return messages
     if c == "change" or cs[0] == "change":
         if len(cs) > 2:
             if cs[1] in itemlist:
@@ -45,18 +53,25 @@ def enterCommand(command):
                         return "please enter a value greater than zero for item " + f"{cs[1]}"
                     i = itemlist.index(cs[1])
                     if i == 0:
+                        history.insert(0,["fps", settings.FPS])
                         settings.FPS = int(cs[2])
                     elif i == 1:
+                        history.insert(0,["paddle_speed", settings.PADDLE_SPEED])
                         settings.PADDLE_SPEED = int(cs[2])
                     elif i == 2:
+                        history.insert(0,["ball_speed", settings.BALL_SPEED])
                         settings.BALL_SPEED = int(cs[2])
                     elif i == 3:
+                        history.insert(0,["win_require", settings.WIN_SCORE])
                         settings.WIN_SCORE = int(cs[2])
                     elif i == 4:
+                        history.insert(0,["p_time", settings.POWERUP_TIME])
                         settings.POWERUP_TIME = int(cs[2])
                     elif i == 5:
+                        history.insert(0,["p_increase", settings.POWERUP_INCREASE])
                         settings.POWERUP_INCREASE = int(cs[2])
                     elif i == 6:
+                        history.insert(0,["p_bounce", settings.POWERUP_BOUNCE_AMOUNT])
                         settings.POWERUP_BOUNCE_AMOUNT = int(cs[2])
                     if settings.SFX == "on":
                         audio.consolegoodSfx.play()
@@ -105,6 +120,8 @@ def enterCommand(command):
     if c == "statlist" or cs[0] == "statlist":
         return "avaiable stats: wins, hits, fireballs, bot_hiscore"
     if c == "reset_items" or cs[0] == "reset_items":
+        history.insert(0,["reset_items", [["fps", settings.FPS],["paddle_speed", settings.PADDLE_SPEED],["ball_speed", settings.BALL_SPEED],
+        ["win_require", settings.WIN_SCORE],["p_time", settings.POWERUP_TIME],["p_increase", settings.POWERUP_INCREASE],["p_bounce", settings.POWERUP_BOUNCE_AMOUNT]]])
         settings.FPS = 60
         settings.PADDLE_SPEED = 8
         settings.BALL_SPEED = 7
@@ -116,6 +133,8 @@ def enterCommand(command):
             audio.consolegoodSfx.play()
         return "items successfully reset"
     if c == "reset_stats" or cs[0] == "reset_stats":
+        history.insert(0,["reset_stats", [["wins", settings.WINS],["hits", settings.HITS],
+        ["fireballs", settings.FIREBALLS],["bot_hiscore", settings.BOT_HISCORE]]])
         settings.WINS = 0
         settings.HITS = 0
         settings.FIREBALLS = 0
@@ -130,7 +149,95 @@ def enterCommand(command):
             audio.buttonSfx.play()
         return "exiting..."
     if c == "controls":
-        return "controls"
+        messages = [
+            "movement controls : W/up arrow = up, S/down arrow = down, D/left arrow = powerup",
+            "other controls : tab = hide bot stats, L = leave match"
+        ]
+        return messages
+    if c == "unscramble":
+        if settings.EGG == True:
+            return "unscrambled egg"
+        else:
+            return "there is nothing to unscramble"
+    if c == "math" or cs[0] == "math":
+        if len(cs) > 1:
+            if cs[1] == "help":
+                return "available characters 1-9, +, -, *, /, ^, ( ) and any item values"
+            import string
+            cs[1] = cs[1].replace("fps", f"{settings.FPS}")
+            cs[1] = cs[1].replace("paddle_speed", f"{settings.PADDLE_SPEED}")
+            cs[1] = cs[1].replace("ball_speed", f"{settings.BALL_SPEED}")
+            cs[1] = cs[1].replace("win_require", f"{settings.WIN_SCORE}")
+            cs[1] = cs[1].replace("p_time", f"{settings.POWERUP_TIME}")
+            cs[1] = cs[1].replace("p_increase", f"{settings.POWERUP_INCREASE}")
+            cs[1] = cs[1].replace("p_bounce", f"{settings.POWERUP_BOUNCE_AMOUNT}")
+            if not set(cs[1]).intersection(string.ascii_letters + "{}[]_;\n"):
+                answer = eval(cs[1])
+                return f"{answer}"
+            return "incorrect spacing or illegal characters, view 'math help' for available characters"
+        return "enter math <equation> to calculate an equation"
+    if c == "undo" or cs[0] == "undo":
+        change = ""
+        if len(history) > 0:
+            if history[0][0] == "reset_stats":
+                for item in history[0][1]:
+                    if currentStats[statlist.index(item[0])] != item[1]:
+                        i = statlist.index(item[0])
+                        if i == 0:
+                            settings.WINS = int(item[1])
+                        elif i == 1:
+                            settings.HITS = int(item[1])
+                        elif i == 2:
+                            settings.FIREBALLS = int(item[1])
+                        elif i == 3:
+                            settings.BOT_HISCORE = int(item[1])
+                if settings.SFX == "on":
+                    audio.consolegoodSfx.play()
+                return "undid reset stats"
+
+            if history[0][0] == "reset_items":
+                for item in history[0][1]:
+                    if currentList[itemlist.index(item[0])] != item[1]:
+                        i = itemlist.index(item[0])
+                        if i == 0:
+                            settings.FPS = int(item[1])
+                        elif i == 1:
+                            settings.PADDLE_SPEED = int(item[1])
+                        elif i == 2:
+                            settings.BALL_SPEED = int(item[1])
+                        elif i == 3:
+                            settings.WIN_SCORE = int(item[1])
+                        elif i == 4:
+                            settings.POWERUP_TIME = int(item[1])
+                        elif i == 5:
+                            settings.POWERUP_INCREASE = int(item[1])
+                        elif i == 6:
+                            settings.POWERUP_BOUNCE_AMOUNT = int(item[1])
+                if settings.SFX == "on":
+                    audio.consolegoodSfx.play()
+                return "undid reset items"
+
+            if currentList[itemlist.index(history[0][0])] != history[0][1]:
+                i = itemlist.index(history[0][0])
+                if i == 0:
+                    settings.FPS = int(history[0][1])
+                elif i == 1:
+                    settings.PADDLE_SPEED = int(history[0][1])
+                elif i == 2:
+                    settings.BALL_SPEED = int(history[0][1])
+                elif i == 3:
+                    settings.WIN_SCORE = int(history[0][1])
+                elif i == 4:
+                    settings.POWERUP_TIME = int(history[0][1])
+                elif i == 5:
+                    settings.POWERUP_INCREASE = int(history[0][1])
+                elif i == 6:
+                    settings.POWERUP_BOUNCE_AMOUNT = int(history[0][1])
+                change = history[0][0]
+                if settings.SFX == "on":
+                    audio.consolegoodSfx.play()
+                return "undid change for " + f"{change}" " from " + f"{currentList[itemlist.index(history[0][0])]}" " to " + f"{history[0][1]}"
+        return "nothing to undo"
     if settings.SFX == "on":
         audio.consolebadSfx.play()
     return "unknown command '" + f"{cs[0]}" + "', type 'help' for more info"
@@ -152,18 +259,22 @@ class Menu:
         self.ofall = False
         self.ofallspeed = 0
         self.randomfactor = random.uniform(-20,20)
+        self.lastchanges = []
 
         self.consoleActive = False
         self.consoleResponse = []
         self.userInput = ""
 
     def setup(self):
+
+        import audio
+        audio.titleslideSfx.play()
+
         self.elements = pygame.sprite.Group()
 
         self.particleSpawner = ParticleSpawner()
 
         gameFont5x5small = pygame.font.Font("assets/bit5x5.ttf", 32)
-        terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
         gameFont5x5large = pygame.font.Font("assets/bit5x5.ttf", 124)
 
         self.widthAdj = 50
@@ -259,7 +370,7 @@ class Menu:
             console.fill((0,0,0))
             self.screen.blit(console, (0,0))
 
-            self.userInputRenderRect = self.userInputRender.get_rect(bottomleft = (217, HEIGHT/4 - 5))
+            self.userInputRenderRect = self.userInputRender.get_rect(bottomleft = (237, HEIGHT/4 - 5))
             self.screen.blit(self.userInputRender, self.userInputRenderRect)
 
             self.consoleStartRect = self.consoleStart.get_rect(bottomleft = (5, HEIGHT/4 - 5))
@@ -267,10 +378,8 @@ class Menu:
 
             if len(self.consoleResponse) != 0:
                 for i in range(len(self.consoleResponse)):
-                    terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
-
                     self.text = terminalFont.render(f"{self.consoleResponse[i]}", False, GREEN)
-                    self.textRect = self.userInputRender.get_rect(bottomleft = (5, HEIGHT/4 - 50 - (i*25)))
+                    self.textRect = self.userInputRender.get_rect(bottomleft = (5, HEIGHT/4 - 50 - (i*20)))
                     self.screen.blit(self.text, self.textRect)
 
         pygame.display.flip()
@@ -355,7 +464,6 @@ class Menu:
         else:
             self.partiButtonAction = gameFont5x5small.render(self.particleSetting, False, BLUE)
 
-
     def run(self):
         self.menuOpen = True
         self.counter = 0
@@ -364,6 +472,7 @@ class Menu:
         gameFont5x5small = pygame.font.Font("assets/bit5x5.ttf", 32)
         while self.menuOpen:
             import settings
+            import audio
             self.tickspeed = self.clock.tick(settings.FPS) / 1000
             self.elements.update()
 
@@ -392,6 +501,8 @@ class Menu:
                         self.heightAnimationGame -= 50
                         self.textGameRect = self.textGame.get_rect(center = (WIDTH/2 + 2 + self.widthAdj, HEIGHT/2 + 65 + self.heightAdj - self.heightAnimationGame))
                         if self.heightAnimationGame == 0:
+                            audio.titlefallSfx.set_volume(0.2)
+                            audio.titlefallSfx.play()
                             for i in range(25):
                                 self.particleSpawner.spawnParticles(LIGHTGREY, WIDTH/2 + 2 + self.widthAdj + random.uniform(-150, 150), HEIGHT/2 + 65 + self.heightAdj - self.heightAnimationGame + 30, "title")
                 if self.counter > 1.7:
@@ -400,6 +511,8 @@ class Menu:
                         self.textPongRect = self.textPong.get_rect(center = (WIDTH/2 - 90 + self.widthAdj, HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong))
                         self.textoRect = self.texto.get_rect(center = (WIDTH/2 - 138 + self.widthAdj, HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong))
                         if self.heightAnimationPong == 0:
+                            audio.titlefallSfx.set_volume(0.2)
+                            audio.titlefallSfx.play()
                             for i in range(25):
                                 self.particleSpawner.spawnParticles(LIGHTGREY, WIDTH/2 - 90 + self.widthAdj + random.uniform(-150, 150), HEIGHT/2 - 30 + self.heightAdj - self.heightAnimationPong + 20, "title") 
                 if self.counter > 0.6:
@@ -416,7 +529,7 @@ class Menu:
             if self.ofall:
                 self.ofallspeed += 0.5
                 self.textoRect.y += self.ofallspeed
-                if self.textoRect.y > 1000:
+                if self.textoRect.y > 2000:
                     self.ofall = False
                     import settings
                     settings.EGG = True
@@ -501,26 +614,35 @@ class Menu:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_BACKSPACE:
                             self.userInput = self.userInput[:-1]
-                            terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
                             self.userInputRender = terminalFont.render(f"{self.userInput}", False, GREEN)
                         elif event.key == pygame.K_RETURN and self.userInput != "":
-                            if enterCommand(self.userInput) == "controls":
-                                self.consoleResponse.insert(0,"movement controls : W/up arrow = up, S/down arrow = down, D/left arrow = powerup")
-                                self.consoleResponse.insert(0,"bot 1v1 controls  : tab = hide bot stats, L = leave match")
+                            from datetime import datetime
+                            now = datetime.now()
+                            currentTime = now.strftime("%H:%M")
+                            response = enterCommand(self.userInput)
+                            if type(response) == list:
+                                counter = 0
+                                for message in response:
+                                    if counter == 0:
+                                        self.consoleResponse.insert(0,"[" + f"{currentTime}" + "] "+ f"{message}")
+                                    else:
+                                        self.consoleResponse.insert(0,f"{message}")
+                                    counter += 1
                                 self.userInput = ""
-                                terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
                                 self.userInputRender = terminalFont.render(f"{self.userInput}", False, GREEN)
                             else:
-                                if enterCommand(self.userInput) == "exiting...":
+                                self.consoleResponse.insert(0,"[" + f"{currentTime}" + "] " + response)
+                                if response == "exiting...":
                                     self.consoleActive = not self.consoleActive
-                                self.consoleResponse.insert(0,enterCommand(self.userInput))
+                                elif response == "unscrambled egg":
+                                    settings.EGG = False
+                                elif response.split(" ")[0] == "undid":
+                                    history.pop(0)
                                 self.userInput = ""
-                                terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
                                 self.userInputRender = terminalFont.render(f"{self.userInput}", False, GREEN)
                         else:
                             if event.key != pygame.K_BACKQUOTE and event.key != pygame.K_RETURN:
                                 self.userInput += event.unicode
-                                terminalFont = pygame.font.Font("assets/terminalFont.ttf", 16)
                                 self.userInputRender = terminalFont.render(f"{self.userInput}", False, GREEN)
                 if self.counter > 3 and not self.consoleActive:
                     import audio
