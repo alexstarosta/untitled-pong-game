@@ -43,6 +43,7 @@ class Game:
             self.leftTargeting = random.randint(20,50)
             self.leftCloseTargeting = random.randint(50,150)
             self.leftPanicDistance = random.randint(100,250)
+            self.leftIntelligence = random.randint(10,80)
         else:
             self.leftReady = False
         self.gameCountdown = 9
@@ -69,6 +70,9 @@ class Game:
         self.autocounter = 400
         self.hideStats = False
         self.lastcount = 0
+
+        self.leftIntel = random.randint(0,100)
+        self.rightIntel = random.randint(0,100)
 
         if gamemode == "bot 1v1":
             self.statTableleft = [
@@ -97,6 +101,11 @@ class Game:
                     self.leftPanicDistance - 100,
                     150
                 ],
+                [
+                    "Intelligence",
+                    self.leftIntelligence - 10,
+                    70
+                ]
             ]
 
         if gamemode == "1 player" or gamemode == "bot 1v1":
@@ -106,6 +115,7 @@ class Game:
             self.rightTargeting = random.randint(20,50)
             self.rightCloseTargeting = random.randint(50,150)
             self.rightPanicDistance = random.randint(100,250)
+            self.rightIntelligence = random.randint(10,80)
         else:
             self.rightReady = False
 
@@ -136,6 +146,11 @@ class Game:
                     self.rightPanicDistance - 100,
                     150
                 ],
+                [
+                    "Intelligence",
+                    self.rightIntelligence - 10,
+                    70
+                ]
             ]
 
         if gamemode == "bot 1v1":
@@ -213,7 +228,7 @@ class Game:
                 i = self.counter1
 
                 heading = gameFont5x3small.render(f"{stat[0]}", False, LIGHTLIGHTGREY)
-                headingRect = heading.get_rect(midleft = (30, HEIGHT - 182 + (i*35)))
+                headingRect = heading.get_rect(midleft = (30, HEIGHT - 212 + (i*35)))
 
                 self.headingTab.insert(1,heading)
                 self.headingRectTab.insert(1,headingRect)
@@ -224,7 +239,7 @@ class Game:
                 i = self.counter2
 
                 heading = gameFont5x3small.render(f"{stat[0]}", False, LIGHTLIGHTGREY)
-                headingRect = heading.get_rect(midright = (WIDTH - 27, HEIGHT - 182 + (i*35)))
+                headingRect = heading.get_rect(midright = (WIDTH - 27, HEIGHT - 212 + (i*35)))
 
                 self.headingTab.insert(1,heading)
                 self.headingRectTab.insert(1,headingRect)
@@ -279,19 +294,19 @@ class Game:
                 for stat in self.statTableleft:
                     i = self.counter1
                     if stat[0] == "Reaction":
-                        pygame.draw.rect(self.screen, DARKBLUE, (19, HEIGHT - 195 + (i*35), 150*((10-stat[1])/stat[2]), 25))
+                        pygame.draw.rect(self.screen, DARKBLUE, (19, HEIGHT - 225 + (i*35), 250*((10-stat[1])/stat[2]), 25))
                     else:
-                        pygame.draw.rect(self.screen, DARKBLUE, (19, HEIGHT - 195 + (i*35), 150*(stat[1]/stat[2]), 25))
-                    pygame.draw.rect(self.screen, LIGHTGREY, (19, HEIGHT - 197 + (i*35), 5, 29))
+                        pygame.draw.rect(self.screen, DARKBLUE, (19, HEIGHT - 225 + (i*35), 250*(stat[1]/stat[2]), 25))
+                    pygame.draw.rect(self.screen, LIGHTGREY, (19, HEIGHT - 227 + (i*35), 5, 29))
                     self.counter1 += 1
 
                 for stat in self.statTableright:
                     i = self.counter2
                     if stat[0] == "Reaction":
-                        pygame.draw.rect(self.screen, DARKRED, (WIDTH - 20 - 150*((10-stat[1])/stat[2]), HEIGHT - 195 + (i*35), 150*((10-stat[1])/stat[2]), 25))
+                        pygame.draw.rect(self.screen, DARKRED, (WIDTH - 20 - 250*((10-stat[1])/stat[2]), HEIGHT - 225 + (i*35), 250*((10-stat[1])/stat[2]), 25))
                     else:
-                        pygame.draw.rect(self.screen, DARKRED, (WIDTH - 20 - 150*(stat[1]/stat[2]), HEIGHT - 195 + (i*35), 150*(stat[1]/stat[2]), 25))
-                    pygame.draw.rect(self.screen, LIGHTGREY, (WIDTH - 23, HEIGHT - 197 + (i*35), 5, 29))
+                        pygame.draw.rect(self.screen, DARKRED, (WIDTH - 20 - 250*(stat[1]/stat[2]), HEIGHT - 225 + (i*35), 250*(stat[1]/stat[2]), 25))
+                    pygame.draw.rect(self.screen, LIGHTGREY, (WIDTH - 23, HEIGHT - 227 + (i*35), 5, 29))
                     self.counter2 += 1
 
                 self.counter1 = 0 
@@ -724,19 +739,24 @@ class Game:
             self.counter += 1
 
             if self.gamemode == "bot 1v1":
-                import settings
+
+                if self.ball.xVel < 0 and self.leftIntelligence >= self.leftIntel:
+                    self.botleftPosition = self.ball.prediction
+                else:
+                    self.botleftPosition = self.ball.y
+
                 if self.counter%self.leftUpdateTime == 0:
-                    if self.ball.y >= self.player1.y + self.player1.height/2 - self.leftTargeting and self.ball.y <= self.player1.y + self.player1.height/2 + self.leftTargeting and abs(self.ball.x - self.player1.x) < self.leftCloseTargeting:
+                    if self.botleftPosition >= self.player1.y + self.player1.height/2 - self.leftTargeting and self.botleftPosition <= self.player1.y + self.player1.height/2 + self.leftTargeting and abs(self.ball.x - self.player1.x) < self.leftCloseTargeting:
                             self.player1.up = False
                             self.player1.down = False
                     else:
-                        if self.ball.y + random.uniform(-1*self.leftRandomSpace,self.leftRandomSpace) < self.player1.y + self.player1.height/2 + random.uniform(-self.leftRandomSpace,self.leftRandomSpace):
+                        if self.botleftPosition + random.uniform(-1*self.leftRandomSpace,self.leftRandomSpace) < self.player1.y + self.player1.height/2 + random.uniform(-self.leftRandomSpace,self.leftRandomSpace):
                             self.player1.up = True
                             self.player1.down = False
                         else:
                             self.player1.up = False
                             self.player1.down = True
-                    if abs(self.ball.y - self.player1.y + self.player1.height/2) > self.leftPanicDistance and abs(self.ball.x - self.player1.x) < self.leftCloseTargeting*2 and self.leftPowerupAllowed and self.ball.xVel < 0:
+                    if abs(self.botleftPosition - self.player1.y + self.player1.height/2) > self.leftPanicDistance and abs(self.ball.x - self.player1.x) < self.leftCloseTargeting*2 and self.leftPowerupAllowed and self.ball.xVel < 0:
                         import audio
                         import settings
                         if settings.SFX == "on":
@@ -746,18 +766,24 @@ class Game:
                         self.leftPowerup = settings.POWERUP_TIME * 100
 
             if self.gamemode == "1 player" or self.gamemode == "bot 1v1":
+
+                if self.ball.xVel > 0 and self.rightIntelligence >= self.rightIntel:
+                    self.botrightPosition = self.ball.prediction
+                else:
+                    self.botrightPosition = self.ball.y
+
                 if self.counter%self.rightUpdateTime == 0:
-                    if self.ball.y >= self.player2.y + self.player2.height/2 - self.rightTargeting and self.ball.y <= self.player2.y + self.player2.height/2 + self.rightTargeting and abs(self.ball.x - self.player2.x) < self.rightCloseTargeting:
+                    if self.botrightPosition >= self.player2.y + self.player2.height/2 - self.rightTargeting and self.botrightPosition <= self.player2.y + self.player2.height/2 + self.rightTargeting and abs(self.ball.x - self.player2.x) < self.rightCloseTargeting:
                             self.player2.up = False
                             self.player2.down = False
                     else:
-                        if self.ball.y + random.uniform(-1*self.rightRandomSpace,self.rightRandomSpace) < self.player2.y + self.player2.height/2 + random.uniform(-self.rightRandomSpace,self.rightRandomSpace):
+                        if self.botrightPosition + random.uniform(-1*self.rightRandomSpace,self.rightRandomSpace) < self.player2.y + self.player2.height/2 + random.uniform(-self.rightRandomSpace,self.rightRandomSpace):
                             self.player2.up = True
                             self.player2.down = False
                         else:
                             self.player2.up = False
                             self.player2.down = True
-                    if abs(self.ball.y - self.player2.y + self.player2.height/2) > self.rightPanicDistance and abs(self.ball.x - self.player2.x) < self.rightCloseTargeting*2 and self.rightPowerupAllowed and self.ball.xVel > 0:
+                    if abs(self.botrightPosition - self.player2.y + self.player2.height/2) > self.rightPanicDistance and abs(self.ball.x - self.player2.x) < self.rightCloseTargeting*2 and self.rightPowerupAllowed and self.ball.xVel > 0:
                         import audio
                         import settings
                         if settings.SFX == "on":

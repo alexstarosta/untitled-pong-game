@@ -166,6 +166,7 @@ class Ball(pygame.sprite.Sprite):
         self.side = "unknown"
         self.angle = 0
         self.lastWinner = "unknown"
+        self.lasty = 0
 
     def startGame(self):
         self.startBall(self.prexVel,self.preyVel)
@@ -224,6 +225,8 @@ class Ball(pygame.sprite.Sprite):
                 self.game.drawScores()
         if self.x < WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = abs(self.xVel)
+            self.game.leftIntel = random.randint(0,100)
+            self.game.rightIntel = random.randint(0,100)
             if settings.SFX == "on":
                 audio.ballhitSfx.play()
             if self.side == "unknown" or self.side == "left":
@@ -239,6 +242,8 @@ class Ball(pygame.sprite.Sprite):
                 self.bounceCount += 1
         if self.x > WIDTH/2 and pygame.sprite.spritecollideany(self, self.game.elements):
             self.xVel = -abs(self.xVel)
+            self.game.leftIntel = random.randint(0,100)
+            self.game.rightIntel = random.randint(0,100)
             if settings.SFX == "on":
                 audio.ballhitSfx.play()
             if self.side == "unknown" or self.side == "right":
@@ -252,6 +257,22 @@ class Ball(pygame.sprite.Sprite):
                     self.side = "left"
                 self.increaseSpeed(0.4)
                 self.bounceCount += 1
+
+    def calcFinalBallPos(self, bally, ballx):
+        updates = 0
+        if self.xVel < 0:
+            updates = abs((ballx)/self.xVel)
+        if self.xVel > 0:
+            updates = abs((WIDTH - ballx)/self.xVel)
+
+        self.prediction = bally + (updates*self.yVel)
+
+        while self.prediction < 0 or self.prediction > HEIGHT:
+            if self.prediction < 0:
+                self.prediction = abs(self.prediction)
+            elif self.prediction > HEIGHT:
+                self.prediction = self.prediction%HEIGHT
+                self.prediction = HEIGHT - self.prediction
 
     def calcYVel(self, player1, player2, bally, ballx, side):
         import audio
@@ -301,6 +322,8 @@ class Ball(pygame.sprite.Sprite):
             else:
                 self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * 1.2    
 
+            self.calcFinalBallPos(self.y, self.x)
+
         if side == "right":
             refPoint = player2.rect.center
             refPointx = refPoint[0] + player2.rect.height/2
@@ -334,7 +357,9 @@ class Ball(pygame.sprite.Sprite):
                 self.angle = abs(self.angle)
                 self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * 1.2
             else:
-                self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * -1.2          
+                self.yVel = (math.tan(self.angle * (math.pi/180)) * abs(self.xVel)) * -1.2    
+
+            self.calcFinalBallPos(self.y, self.x)      
 
     def update(self):
         self.checkWalls()
@@ -351,6 +376,7 @@ class Ball(pygame.sprite.Sprite):
                 self.rect.y = self.y
                 self.x += self.xVel
                 self.rect.x = self.x
+            self.calcFinalBallPos(self.y, self.x)
         elif self.type == "fireball":
             if self.game.fireballActive:
                 self.rect = self.image.get_rect(center = (self.game.ball.x + self.game.ball.width/2 - 1 + random.uniform(-5,5), self.game.ball.y + self.game.ball.height/2 - 1 + random.uniform(-5,5)))
