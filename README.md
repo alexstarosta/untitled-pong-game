@@ -6,12 +6,6 @@
 <p align="center"><strong>Pong, redefined.</strong></p>
 <br/>
 
-<p align="center">
-  <img src="https://img.shields.io/static/v1?label=iOS&message=15.4&color=2ea44f&style=for-the-badge&logo=Apple" alt="iOS - 15.4">
-  <img src="https://img.shields.io/static/v1?label=&message=Swift&color=%23fe5a2e&style=for-the-badge&logo=Swift&logoColor=fff" alt="Swift">
-  <img src="https://img.shields.io/static/v1?label=&message=Swiftui&color=%230289fe&style=for-the-badge&logo=Swift&logoColor=000" alt="Swiftui">
-</p>
-
 <h2 align="center">Untitled Pong Game</h2>
 <br/>
 <p align="center">
