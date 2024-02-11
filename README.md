@@ -1,5 +1,24 @@
-# Untitled Pong Game
-In this rendition of the classic game Pong, a variety of additions elevate the experience. The rules remain the same, the game features two paddles and a ball with the objective of scoring points by hitting the ball past the opponent's paddle. However, with a multitude of customization options and game modes, you can tailor the game to your liking. 
+<p align="center">
+    <img width="200" alt="Game Logo" src="https://github.com/alexstarosta/untitled-pong-game/assets/110436783/8a1af719-9555-41f7-959d-4c8bb4fd5c03">
+</p>
+
+
+<p align="center"><strong>Pong, redefined.</strong></p>
+<br/>
+
+<p align="center">
+  <img src="https://img.shields.io/static/v1?label=iOS&message=15.4&color=2ea44f&style=for-the-badge&logo=Apple" alt="iOS - 15.4">
+  <img src="https://img.shields.io/static/v1?label=&message=Swift&color=%23fe5a2e&style=for-the-badge&logo=Swift&logoColor=fff" alt="Swift">
+  <img src="https://img.shields.io/static/v1?label=&message=Swiftui&color=%230289fe&style=for-the-badge&logo=Swift&logoColor=000" alt="Swiftui">
+</p>
+
+<h2 align="center">Untitled Pong Game</h2>
+<br/>
+<p align="center">
+  Untitled Pong Game elevates the original game of pong <strong>allowing you to customize ALL aspects of the game</strong>
+</p>
+<br/>
+<br/>
 
 ## Features
 * **Game Modes** - Play either single-player, multiplayer or generate a bot 1v1.
@@ -14,6 +33,3 @@ To play this game, you must have Python 3 and the Pygame library installed on yo
 * You can install Pygame using pip: `pip install pygame`
 * Once you have Pygame installed, you can clone this repository using: `git clone https://github.com/alexstarosta/untitledPongGame`
 * Alternatively, you can download the source code as a ZIP file and extract it to your desired directory.
-
-## Contributing
-Contributions are always welcome! If you find a bug or have an idea for a new feature, please submit an issue on the GitHub repository. If you would like to contribute to the project, please feel free to fork the repository and submit a pull request.
